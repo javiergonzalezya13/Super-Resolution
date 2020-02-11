@@ -496,6 +496,11 @@ class TecoGAN(object):
 
             # Discriminator training
             self.discriminator.trainable = True
+            self.discriminator.compile(loss=['binary_crossentropy',
+                                         'mean_squared_error', 'mean_squared_error',
+                                         'mean_squared_error', 'mean_squared_error'],
+                                       loss_weights=[1., 0., 0., 0., 0.],
+                                       optimizer=self.opt)
 
             net_input = [prev_hr_batch, hr_batch, next_hr_batch,
                          prev_hat_hr_batch, hr_batch, next_hat_hr_batch,
