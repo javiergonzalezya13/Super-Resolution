@@ -1,0 +1,38 @@
+root_dir: ./
+
+stage:
+  train: true
+  eval: false
+  run: false
+
+data:
+  low_res: 64
+  high_res: 256
+  channels: 3
+  upscale: 4
+  c_frames: 10
+  create_data: false
+  load_data: true
+  data_dir: DATASET/2019-10-2 16:43:59
+  videos: ./
+
+model: tecogan
+
+train:
+  gen_iterations: 236000
+  iterations: 450000
+  batch_size: 4
+  pretrained_gen: MODEL/2019-12-12 14:14:3/Checkpoints/generator_model_weights_236000.h5 # TecoGAN parameter
+  pretrained_disc: # TecoGAN parameter
+  sample_freq: 250
+  checkpoint_freq: 1000
+
+eval:
+  # pretrained_model: MODEL/2019-10-14\ 8\:37\:46/Checkpoints/frvsr_model_weights_18000.h5
+  pretrained_gen: 
+  pretrained_disc:
+
+run:
+  # pretrained_model: MODEL/2019-10-14\ 8\:37\:46/Checkpoints/frvsr_model_weights_18000.h5
+  pretrained_gen:
+  pretrained_disc:

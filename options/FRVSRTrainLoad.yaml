@@ -1,0 +1,25 @@
+root_dir: ./
+
+stage:
+  train: true
+  eval: false
+  run: false
+
+data:
+  low_res: 64
+  high_res: 256
+  channels: 3
+  upscale: 4
+  c_frames: 10
+  create_data: false
+  load_data: true
+  data_dir: DATASET/2019-10-2\ 16\:43\:59
+  videos: ./
+
+model:
+  model_type: frvsr
+  pretrained_model: MODEL/2019-10-14\ 8\:37\:46/Checkpoints/frvsr_model_weights_18000.h5
+
+train:
+  iterations: 2000000
+  batch_size: 4
