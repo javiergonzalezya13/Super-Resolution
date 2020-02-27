@@ -1,11 +1,17 @@
+'''
+Main code to use CNNs
+'''
 import argparse
 import datetime
 import os
 import sys
-from utils import generate_frames
+
 import yaml
-from TecoGAN import *
+
 from FRVSR import *
+from TecoGAN import *
+from utils import generate_frames
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
@@ -32,36 +38,26 @@ if __name__ == '__main__':
                 configs['data']['channels'])
     upscale = configs['data']['upscale']
 
-    now = datetime.datetime.now()
-    output_dir = '%d-%d-%d %d:%d:%d' % (now.year, now.month, now.day, now.hour, now.minute, now.second)
-    data_output_dir = os.path.join(configs['root_dir'], 'DATASET', output_dir)
-    output_dir = os.path.join(configs['root_dir'], 'MODEL', output_dir)
+    NOW = datetime.datetime.now()
+    OUTPUT_DIR = '%d-%d-%d %d:%d:%d' % (NOW.year, NOW.month, NOW.day,
+                                        NOW.hour, NOW.minute, NOW.second)
+
+    if not configs['data']['videos']:
+        print('[ERROR] No data available.')
+        sys.exit(0)
+
+    OUTPUT_DIR = os.path.join(configs['root_dir'], 'MODEL', OUTPUT_DIR)
 
     if (LR_shape[0] * upscale != HR_shape[0]) or (LR_shape[1] * upscale != HR_shape[1]):
         print('[ERROR] Incompatible resolutions with upscale x%d.' % (upscale))
         sys.exit(0)
 
-    # DATASET
-    if not configs['data']['load_data'] and configs['data']['create_data']:
-        os.makedirs(data_output_dir)
-        print('[INFO] Creating dataset...')
-        generate_frames(configs, data_output_dir)
-    elif not configs['data']['create_data'] and configs['data']['load_data']:
-        print('[INFO] Loading dataset...')
-        if isinstance(configs['data']['data_dir'], list):
-            for idx, data_dir in enumerate(configs['data']['data_dir']):
-                configs['data']['data_dir'][idx] = os.path.join(configs['root_dir'], data_dir)
-        else:
-            configs['data']['data_dir'] = os.path.join(configs['root_dir'], configs['data']['data_dir'])
-    else:
-        print('[INFO] No dataset available.')
-
     # MODEL
     if configs['stage']['train'] or configs['stage']['eval'] or configs['stage']['run']:
         if configs['model'] == 'frvsr':
-            model = FrameRecurrentVideoSR(LR_shape, HR_shape, output_dir, configs)
+            model = FrameRecurrentVideoSR(LR_shape, HR_shape, OUTPUT_DIR, configs)
         elif configs['model'] == 'tecogan':
-            model = TecoGAN(LR_shape, HR_shape, output_dir, configs)
+            model = TecoGAN(LR_shape, HR_shape, OUTPUT_DIR, configs)
         else:
             print('[ERROR] Not valid model selected.')
             sys.exit(0)
@@ -78,4 +74,4 @@ if __name__ == '__main__':
     # RUN
     if configs['stage']['run']:
         # model.run(configs)
-        model.run_testing()
+        model.run()

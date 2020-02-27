@@ -39,6 +39,29 @@ def generate_frames(configs, output_dir):
     cap.release()
     return 0
 
+def get_frames(video, configs):
+    cap = cv2.VideoCapture(video)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    valid_frames = False
+    while not valid_frames:
+        frame_n = np.random.randint(0, total_frames)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_n)
+        hr_c_frames = []
+        for _ in range(configs['data']['c_frames']):
+            ret, hr_frame = cap.read()
+            # Video completed
+            if not ret:
+                break
+            hr_frame = cv2.resize(hr_frame,
+                                  (configs['data']['high_res'], configs['data']['high_res']),
+                                  interpolation=cv2.INTER_CUBIC)
+            hr_c_frames.append(hr_frame)
+        if ret:
+            valid_frames = True
+
+    cap.release()
+    return hr_c_frames
+
 def normalize(input_data):
     return input_data.astype(np.float32) / 255.0
 

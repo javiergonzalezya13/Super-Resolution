@@ -10,11 +10,7 @@ data:
   high_res: 256
   channels: 3
   upscale: 4
-  c_frames: 10
-  create_data: false
-  load_data: true
-  data_dir: [DATASET/2019-10-2 16:43:59, DATASET/2020-1-14 16:57:35]
-  videos: ./
+  c_frames: 10videos: /media/javier/ATLAS/Memoria/Good videos
 
 model: frvsr
 
@@ -24,9 +20,13 @@ train:
   pretrained_model:
   sample_freq: 250
   checkpoint_freq: 1000
+  info_freq: 100
 
 eval:
   pretrained_model:
+  rows: 2
+  cols: 2
+  video: Video test/8.mp4
 
 run:
   pretrained_model: MODEL/2019-10-15 12:23:1/Checkpoints/frvsr_model_weights_1513000.h5

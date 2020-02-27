@@ -22,31 +22,31 @@ class TecoGAN(object):
 
     def build(self):
         print('[INFO] Creating FNet...')
-        self.fnet = FNet(self.lr_shape).fnet()
+        self.fnet = FNet(self.lr_shape).build()
         print('[INFO] FNet ready.')
 
         print('[INFO] Creating SRNet...')
-        self.srnet = SRNet(self.lr_shape).srnet()
+        self.srnet = SRNet(self.lr_shape).build()
         print('[INFO] SRNet ready.')
 
         print('[INFO] Creating Upscaling...')
-        self.upscaling = Upscaling(self.lr_shape).upscaling()
+        self.upscaling = Upscaling(self.lr_shape).build()
         print('[INFO] Upscaling ready.')
 
         print('[INFO] Creating High Resolution Warp...')
-        self.hr_warp = Warp(self.hr_shape, 1).warp()
+        self.hr_warp = Warp(self.hr_shape, 1).build()
         print('[INFO] High Resolution Warp ready.')
 
         print('[INFO] Creating Low Resolution Warp...')
-        self.lr_warp = Warp(self.lr_shape, 2).warp()
+        self.lr_warp = Warp(self.lr_shape, 2).build()
         print('[INFO] Low Resolution Warp ready.')
 
         print('[INFO] Creating Space to Depth...')
-        self.space2depth = Space2Depth(self.hr_shape).space2depth()
+        self.space2depth = Space2Depth(self.hr_shape).build()
         print('[INFO] Space to Depth ready.')
 
         print('[INFO] Creating Bicubic Upscaling...')
-        self.bicubic_upscale = Upscaling(self.lr_shape, 1).upscaling()
+        self.bicubic_upscale = Upscaling(self.lr_shape, 1).build()
         print('[INFO] Bicubic Upscaling ready.')
 
         print('[INFO] Creating Discriminator...')
@@ -184,21 +184,33 @@ class TecoGAN(object):
         os.makedirs(samples_dir)
         self.checkpoints_dir = os.path.join(self.output_dir, 'Checkpoints')
         os.makedirs(self.checkpoints_dir)
-        scenes = [f for f in os.listdir(self.configs['data']['data_dir'])
-                  if os.path.isfile(os.path.join(self.configs['data']['data_dir'], f))]
+        
+        videos = []
+        if isinstance(self.configs['data']['videos'], list):
+            for data_dir in self.configs['data']['videos']:
+                for f in os.listdir(data_dir):
+                    if os.path.isfile(os.path.join(data_dir, f)):
+                        videos.append(os.path.join(data_dir, f))
+        else:
+            data_dir = self.configs['data']['videos']
+            for f in os.listdir(data_dir):
+                if os.path.isfile(os.path.join(data_dir, f)):
+                    videos.append(os.path.join(data_dir, f))
+        
 
         pretrain_gen = True
 
         if self.configs['train']['pretrained_disc']:
             print('[INFO] Loading pretrained discriminator...')
-            self.discriminator.load_weights(self.configs['train']['pretrained_disc'])
+            pretrained_disc_file = os.path.join(self.configs['root_dir'], self.configs['train']['pretrained_disc'])
+            self.discriminator.load_weights(pretrained_disc_file)
             pretrain_gen = False
             print('[INFO] Discriminator ready.')
 
         if self.configs['train']['pretrained_gen']:
             print('[INFO] Loading pretrained generator...')
-            pretrain_gen_file = os.path.join(self.configs['root_dir'], self.configs['train']['pretrained_gen'])
-            self.generator.load_weights(pretrain_gen_file)
+            pretrained_gen_file = os.path.join(self.configs['root_dir'], self.configs['train']['pretrained_gen'])
+            self.generator.load_weights(pretrained_gen_file)
             name = os.path.splitext(self.configs['train']['pretrained_gen'])[0]
             i_init = int(name.split('_')[-1])
             if (pretrain_gen) and (i_init == self.configs['train']['gen_iterations']):
@@ -225,20 +237,15 @@ class TecoGAN(object):
         # ---------------------------------------------Pretrain generator------------------------------------------
         while i <= self.configs['train']['gen_iterations'] and pretrain_gen:
             # Choose batch index
-            rand_batch = np.random.randint(0, len(scenes), size=self.configs['train']['batch_size'])
+            rand_batch = np.random.randint(0, len(videos), size=self.configs['train']['batch_size'])
 
             # Generate HR and LR batch samples at t
             for j in range(self.configs['train']['batch_size']):
+                hr_single = get_frames(videos[rand_batch[j]], self.configs)
                 if j == 0:
-                    hr_batch = np.load(os.path.join(self.configs['data']['data_dir'],
-                                                    scenes[rand_batch[j]]))
+                    hr_batch = np.array(hr_single)
                 else:
-                    try:
-                        hr_single = np.load(os.path.join(self.configs['data']['data_dir'],
-                                                         scenes[rand_batch[j]]))
-                        hr_batch = np.append(hr_batch, hr_single, axis=0)
-                    except ValueError:
-                        sys.exit(0)
+                    hr_batch = np.append(hr_batch, hr_single, axis=0)
 
             hr_batch = normalize(hr_batch)
 
@@ -341,20 +348,15 @@ class TecoGAN(object):
 
         while i <= self.configs['train']['iterations']:
             # Choose batch index
-            rand_batch = np.random.randint(0, len(scenes), size=self.configs['train']['batch_size'])
+            rand_batch = np.random.randint(0, len(videos), size=self.configs['train']['batch_size'])
 
             # Generate HR at t batch samples
             for j in range(self.configs['train']['batch_size']):
+                hr_single = get_frames(videos[rand_batch[j]], self.configs)
                 if j == 0:
-                    hr_batch = np.load(os.path.join(self.configs['data']['data_dir'],
-                                                    scenes[rand_batch[j]]))
+                    hr_batch = np.array(hr_single)
                 else:
-                    try:
-                        hr_single = np.load(os.path.join(self.configs['data']['data_dir'],
-                                                         scenes[rand_batch[j]]))
-                        hr_batch = np.append(hr_batch, hr_single, axis=0)
-                    except ValueError:
-                        sys.exit(0)
+                    hr_batch = np.append(hr_batch, hr_single, axis=0)
             hr_batch = np.append(hr_batch, hr_batch[::-1], axis=0)
 
             hr_batch = normalize(hr_batch)
@@ -425,17 +427,6 @@ class TecoGAN(object):
                     prev_hat_est_batch = np.append(prev_hat_est_batch, [est_frame[0]], axis=0)
                     hr_frame = self.hr_warping.predict([lr_frame, prev_lr_frame, prev_hr_frame])
                     prev_hat_hr_batch = np.append(prev_hat_hr_batch, [hr_frame[0]], axis=0)
-
-            # print('hr batch', hr_batch.shape)
-            # print('lr batch', lr_batch.shape)
-            # print('prev lr batch', prev_lr_batch.shape)
-            # print('prev est batch', prev_est_batch.shape)
-            # print('bic batch', bic_batch.shape)
-            # print('prev bic batch', prev_bic_batch.shape)
-            # print('prev hr batch', prev_hr_batch.shape)
-            # print('est batch batch', est_batch.shape)
-            # print('prev hat est batch', prev_hat_est_batch.shape)
-            # print('prev hat hr batch', prev_hat_hr_batch.shape)
 
             # Generate batches at t+1
             for b in range(hr_batch.shape[0]):

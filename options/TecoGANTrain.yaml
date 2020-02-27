@@ -11,9 +11,6 @@ data:
   channels: 3
   upscale: 4
   c_frames: 10
-  create_data: false
-  load_data: true
-  data_dir: DATASET/2019-10-2 16:43:59
   videos: ./
 
 model: tecogan
@@ -26,13 +23,20 @@ train:
   pretrained_disc: # TecoGAN parameter
   sample_freq: 250
   checkpoint_freq: 1000
+  info_freq: 100
 
 eval:
   # pretrained_model: MODEL/2019-10-14\ 8\:37\:46/Checkpoints/frvsr_model_weights_18000.h5
   pretrained_gen: 
   pretrained_disc:
+  rows: 2
+  cols: 2
+  video: Video test/8.mp4
 
 run:
   # pretrained_model: MODEL/2019-10-14\ 8\:37\:46/Checkpoints/frvsr_model_weights_18000.h5
   pretrained_gen:
   pretrained_disc:
+  rows: 2
+  cols: 2
+  video: Video test/8.mp4

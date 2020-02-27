@@ -1,27 +1,31 @@
 root_dir: ./
 
 stage:
-  train: true
+  train: false
   eval: false
   run: false
 
 data:
-  low_res: 128
-  high_res: 512
+  low_res: 64
+  high_res: 256
   channels: 3
   upscale: 4
   c_frames: 10
-  videos: /media/javier/ATLAS/Memoria/Good videos
+  videos: ./../Dataset/Flow with text
 
-model: frvsr
+model: edvr
+
+architecture:
+  predeblur: true
 
 train:
   iterations: 2000000
-  batch_size: 1
+  batch_size: 4
   pretrained_model:
-  sample_freq: 2500
-  checkpoint_freq: 10000
+  sample_freq: 250
+  checkpoint_freq: 1000
   info_freq: 100
+  n_frames: 5
 
 eval:
   pretrained_model:

@@ -1,3 +1,6 @@
+'''
+Frame-Recurrent VVideo Super Resolution implementation
+'''
 import datetime
 import os
 import sys
@@ -9,7 +12,6 @@ from keras.utils import plot_model
 
 from layers import *
 from utils import *
-# from skimage.measure import compare_ssim
 from skimage.measure import compare_ssim as ssim
 
 class FrameRecurrentVideoSR(object):
@@ -21,27 +23,27 @@ class FrameRecurrentVideoSR(object):
 
     def build(self):
         print('[INFO] Creating FNet...')
-        self.fnet = FNet(self.lr_shape).fnet()
+        self.fnet = FNet(self.lr_shape).build()
         print('[INFO] FNet ready.')
 
         print('[INFO] Creating SRNet...')
-        self.srnet = SRNet(self.lr_shape).srnet()
+        self.srnet = SRNet(self.lr_shape).build()
         print('[INFO] SRNet ready.')
 
         print('[INFO] Creating Upscaling...')
-        self.upscaling = Upscaling(self.lr_shape).upscaling()
+        self.upscaling = Upscaling(self.lr_shape).build()
         print('[INFO] Upscaling ready.')
 
         print('[INFO] Creating High Resolution Warp...')
-        self.hr_warp = Warp(self.hr_shape, 1).warp()
+        self.hr_warp = Warp(self.hr_shape, 1).build()
         print('[INFO] High Resolution Warp ready.')
 
         print('[INFO] Creating Low Resolution Warp...')
-        self.lr_warp = Warp(self.lr_shape, 2).warp()
+        self.lr_warp = Warp(self.lr_shape, 2).build()
         print('[INFO] Low Resolution Warp ready.')
 
         print('[INFO] Creating Space to Depth...')
-        self.space2depth = Space2Depth(self.hr_shape).space2depth()
+        self.space2depth = Space2Depth(self.hr_shape).build()
         print('[INFO] Space to Depth ready.')
 
         if self.configs['stage']['train']:
@@ -89,15 +91,17 @@ class FrameRecurrentVideoSR(object):
         os.makedirs(samples_dir)
         checkpoints_dir = os.path.join(self.output_dir, 'Checkpoints')
         os.makedirs(checkpoints_dir)
-        scenes = []
-        if isinstance(self.configs['data']['data_dir'], list):
-            for data_dir in self.configs['data']['data_dir']:
+        videos = []
+        if isinstance(self.configs['data']['videos'], list):
+            for data_dir in self.configs['data']['videos']:
                 for f in os.listdir(data_dir):
                     if os.path.isfile(os.path.join(data_dir, f)):
-                        scenes.append(os.path.join(data_dir, f))
+                        videos.append(os.path.join(data_dir, f))
         else:
-            scenes = [f for f in os.listdir(self.configs['data']['data_dir'])
-                      if os.path.isfile(os.path.join(self.configs['data']['data_dir'], f))]
+            data_dir = self.configs['data']['videos']
+            for f in os.listdir(data_dir):
+                if os.path.isfile(os.path.join(data_dir, f)):
+                    videos.append(os.path.join(data_dir, f))
 
         if self.configs['train']['pretrained_model']:
             print('[INFO] Loading pretrained model...')
@@ -112,22 +116,15 @@ class FrameRecurrentVideoSR(object):
 
             # Choose batch index
             # t1 = datetime.datetime.now()
-            rand_batch = np.random.randint(0, len(scenes), size=self.configs['train']['batch_size'])
+            rand_batch = np.random.randint(0, len(videos), size=self.configs['train']['batch_size'])
 
-            # Generate HR and LR batch samples at t
+            # Generate HR batch samples at t
             for j in range(self.configs['train']['batch_size']):
+                hr_single = get_frames(videos[rand_batch[j]], self.configs)
                 if j == 0:
-                    # hr_batch = np.load(os.path.join(self.configs['data']['data_dir'],
-                    #                                 scenes[rand_batch[j]]))
-                    hr_batch = np.load(scenes[rand_batch[j]])
+                    hr_batch = np.array(hr_single)
                 else:
-                    try:
-                        # hr_single = np.load(os.path.join(self.configs['data']['data_dir'],
-                        #                             scenes[rand_batch[j]]))
-                        hr_single = np.load(scenes[rand_batch[j]])
-                        hr_batch = np.append(hr_batch, hr_single, axis=0)
-                    except ValueError:
-                        sys.exit(0)
+                    hr_batch = np.append(hr_batch, hr_single, axis=0)
             hr_batch = normalize(hr_batch)
 
             # Generate LR at t, and LR and estimated HR at t-1 for batch samples
@@ -170,18 +167,16 @@ class FrameRecurrentVideoSR(object):
             # t2 = datetime.datetime.now()
             # t_total = t2 - t1
             # print('[INFO] Processing time: %f seconds' % t_total.total_seconds())
-
             # Train net
             net_input = [lr_batch, prev_lr_batch, prev_est_batch]
             net_output = [hr_batch, lr_batch]
             loss = self.frvsr.train_on_batch(net_input, net_output)
-
             # t2 = datetime.datetime.now()
             # t_total = t2 - t1
             # print('[INFO] Training time: %f seconds' % t_total.total_seconds())
 
             # Training information
-            if i % 100 == 0:
+            if i % self.configs['train']['info_freq'] == 0:
                 print('[INFO]', '-'*15, 'Iteration %d' % i, '-'*15)
                 print('[INFO] Total loss: %f \t SR loss: %f \t Flow loss: %f' % (loss[0], loss[1], loss[2]))
 
@@ -245,9 +240,6 @@ class FrameRecurrentVideoSR(object):
 
         window_rows = 2
         window_cols = 2
-
-        prev_lr_frame = np.array([np.zeros((self.lr_shape[0] * rows, self.lr_shape[1] * cols, self.lr_shape[2]))])
-        prev_est_frame = np.array([np.zeros((self.hr_shape[0] * rows, self.hr_shape[1] * cols, self.hr_shape[2]))])
 
         est_frame = np.array([np.zeros((self.hr_shape[0] * rows, self.hr_shape[1] * cols, self.hr_shape[2]))])
 
@@ -424,105 +416,6 @@ class FrameRecurrentVideoSR(object):
         rows = self.configs['run']['rows']
         cols = self.configs['run']['cols']
 
-        est_frame = np.array([np.zeros((self.hr_shape[0] * rows, self.hr_shape[1] * cols, self.hr_shape[2]))])
-        prev_frame = np.array([np.zeros((self.lr_shape[0] * rows, self.lr_shape[1] * cols, self.lr_shape[2]))])
-        prev_est = np.array([np.zeros((self.hr_shape[0] * rows, self.hr_shape[1] * cols, self.hr_shape[2]))])
-
-        t = 0
-        t1 = datetime.datetime.now()
-
-        if self.configs['run']['video']:
-            cap = cv2.VideoCapture(self.configs['run']['video'])
-        else:
-            cap = cv2.VideoCapture(0)
-
-        while cap.isOpened:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            frame = normalize(frame)
-
-            hr_frame = cv2.resize(frame,
-                                  (self.configs['data']['high_res'] * rows, self.configs['data']['high_res'] * cols),
-                                  interpolation=cv2.INTER_CUBIC)
-            lr_frame = np.array([cv2.resize(cv2.GaussianBlur(hr_frame, (5, 5), 0),
-                                            (self.configs['data']['low_res'] * rows,
-                                             self.configs['data']['low_res'] * cols),
-                                interpolation=cv2.INTER_CUBIC)])
-
-            for i in range(rows):
-                for j in range(cols):
-                    # sub_hr_frame = hr_frame[i * self.configs['data']['high_res']: (i+1) * self.configs['data']['high_res'],
-                    #                         j * self.configs['data']['high_res']: (j+1) * self.configs['data']['high_res']]
-
-                    sub_lr_frame = lr_frame[:, i * self.configs['data']['low_res']: (i+1) * self.configs['data']['low_res'],
-                                            j * self.configs['data']['low_res']: (j+1) * self.configs['data']['low_res']]
-
-                    sub_prev_frame = prev_frame[:, i * self.configs['data']['low_res']: (i+1) * self.configs['data']['low_res'],
-                                                j * self.configs['data']['low_res']: (j+1) * self.configs['data']['low_res']]
-
-                    sub_prev_est = prev_est[:, i * self.configs['data']['high_res']: (i+1) * self.configs['data']['high_res'],
-                                            j * self.configs['data']['high_res']: (j+1) * self.configs['data']['high_res']]
-
-                    sub_est_frame, _ = self.frvsr.predict([sub_lr_frame,
-                                                           sub_prev_frame,
-                                                           sub_prev_est])
-
-                    est_frame[:, i * self.configs['data']['high_res']: (i+1) * self.configs['data']['high_res'], j * self.configs['data']['high_res']: (j+1) * self.configs['data']['high_res']] = sub_est_frame
-
-            bicubic_frame = cv2.resize(lr_frame[0], (self.configs['data']['high_res'] * rows, self.configs['data']['high_res'] * cols),
-                                       interpolation=cv2.INTER_CUBIC)
-
-            prev_frame = lr_frame
-            prev_est = est_frame
-
-            # neares = 
-
-            img_window = np.concatenate((hr_frame, est_frame[0]), axis=1)
-            img_window = np.concatenate((img_window, bicubic_frame), axis=1)
-
-            cv2.imshow('Low Resolution Frame', lr_frame[0])
-            t2 = datetime.datetime.now()
-            delta_t = t2 - t1
-            fps = int(1 / delta_t.total_seconds())
-
-            if t == 100:
-                print('[INFO] FPS: %d \t Bicubic PSNR: %f \t FRVSR PSNR: %f' % (fps, psnr(hr_frame, bicubic_frame), psnr(hr_frame, est_frame[0])))
-                t = 0
-            t += 1
-
-            text_window = 'FPS:%d (P:Pause/Continue Q:Quit)' % fps
-            cv2.putText(img_window, text_window, (0, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 1, 0), 1, cv2.LINE_4)
-            cv2.imshow('High Resolution / Frame-Recurrent Video Super Resolution / Bicubic Resolution',
-                       img_window)
-
-            t1 = datetime.datetime.now()
-            key = cv2.waitKey(1)
-            if key == ord('p'):
-                while True:
-                    cv2.imshow('Low Resolution Frame', lr_frame[0])
-                    cv2.imshow('High Resolution / Frame-Recurrent Video Super Resolution / Bicubic Resolution', img_window)
-                    if cv2.waitKey(1) == ord('p'):
-                        break
-            elif key == ord('q'):
-                break
-
-        cap.release()
-        cv2.destroyAllWindows()
-        print('[INFO] Video stopped.')
-
-    def run_testing(self):
-        print('[INFO] Loading pretrained model...')
-
-        if self.configs['run']['pretrained_model']:
-            self.frvsr.load_weights(self.configs['run']['pretrained_model'])
-
-        print('[INFO] Model ready.')
-        print('[INFO] Running model...')
-
-        rows = self.configs['run']['rows']
-        cols = self.configs['run']['cols']
-
         prev_lr_frame = np.array([np.zeros((self.lr_shape[0] * rows, self.lr_shape[1] * cols, self.lr_shape[2]))])
         prev_est_frame = np.array([np.zeros((self.hr_shape[0] * rows, self.hr_shape[1] * cols, self.hr_shape[2]))])
 
@@ -592,15 +485,10 @@ class FrameRecurrentVideoSR(object):
 
             lr_scale = cv2.copyMakeBorder(lr_frame[0], border, border, border, border, cv2.BORDER_CONSTANT)
 
-            # img_windows.append(hr_frame)
-            # print(hr_frame.dtype)
             img_windows.append(lr_scale)
             img_windows.append(est_frame[0])
-            # print(est_frame[0].dtype)
             img_windows.append(bicubic_frame)
-            # print(bicubic_frame.dtype)
             img_windows.append(nearest_frame)
-            # print(nearest_frame.dtype)
 
             window_rows = 2
             window_cols = 2
@@ -608,7 +496,7 @@ class FrameRecurrentVideoSR(object):
             img_window = np.zeros((window_rows * self.hr_shape[0] * rows,
                                    window_cols * self.hr_shape[1] * cols,
                                    self.hr_shape[2]))
-            
+
             # for img in img_windows:
             #     try:
             #         img_window = np.concatenate((img_window, img), axis=0)
@@ -645,16 +533,13 @@ class FrameRecurrentVideoSR(object):
                 t = 0
             t += 1
 
-            # text_window = 'FPS:%d (P:Pause/Continue Q:Quit)' % fps
             text_window = 'FPS:%d' % fps
 
             window_title = 'Original / Frame-Recurrent Video Super Resolution / Bicubic / Nearest'
             cv2.putText(img_window, text_window, (0, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 1, 0), 1, cv2.LINE_4)
-            
+
             cv2.imshow(window_title, img_window)
 
-            # cv2.imshow('Low Resolution Frame', lr_frame[0])
-            
 
             key = cv2.waitKey(1)
             if key == ord('p'):
