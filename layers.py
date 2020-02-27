@@ -5,11 +5,13 @@ from keras.layers.core import Activation
 from keras.models import Model
 import keras.backend as K
 
+# --------------------------------FRVSR and TecoGAN layers--------------------------------
+
 class FNet(object):
     def __init__(self, LR_shape):
         self.LR_shape = LR_shape
 
-    def fnet(self):
+    def build(self):
         def Residual_Block(input_layer, filters, kernel=3, strides=1, leakage=0.2):
             x = Conv2D(filters=filters, kernel_size=kernel, strides=strides, padding='same')(input_layer)
             x = LeakyReLU(leakage)(x)
@@ -46,7 +48,7 @@ class SRNet(object):
         self.lr_shape = LR_shape
         self.Ss_shape = (LR_shape[0], LR_shape[1], LR_shape[2] * 16)
 
-    def srnet(self):
+    def build(self):
         def Residual_Block(input_layer, filters=64, kernel=3, strides=1):
             x = Conv2D(filters=filters, kernel_size=kernel, strides=strides, padding='same')(input_layer)
             x = ReLU()(x)
@@ -76,7 +78,7 @@ class Upscaling(object):
     def __init__(self, LR_shape, idx=0):
         self.lr_shape = LR_shape
         self.idx = idx
-    def upscaling(self):
+    def build(self):
         F_LR = Input(shape=self.lr_shape)
         output = UpSampling2D(size=4, interpolation='bilinear')(F_LR)
 
@@ -87,7 +89,7 @@ class Upscaling(object):
 class Space2Depth(object):
     def __init__(self, HR_shape):
         self.hr_shape = HR_shape
-    def space2depth(self):
+    def build(self):
         def space2depth_custom(input_shape, idx, scale=4):
             def space2depth_shape(input_shape):
                 dims = [input_shape[0],
@@ -111,7 +113,7 @@ class Warp(object):
     def __init__(self, input_shape, idx):
         self.input_shape = input_shape
         self.idx = idx
-    def warp(self):
+    def build(self):
         def warp_custom(input_shape, idx):
             def warp_shape(input_shape):
                 dims = input_shape[0]
@@ -133,7 +135,6 @@ class Discriminator(object):
     def __init__(self, HR_shape):
         self.HR_shape = HR_shape
     def build(self):
-        pass
         def Discriminator_Block(input_layer, filters):
             x = Conv2D(filters=filters, kernel_size=4, strides=2, padding='same')(input_layer)
             x = BatchNormalization()(x)
@@ -174,3 +175,28 @@ class Discriminator(object):
 
         model.name = 'Discriminator'
         return model
+
+# ------------------------------------EDVR layers--------------------------------
+class PreDeblur(object):
+    def __init__(self):
+        pass
+    def build(self):
+        return 0
+
+class PCDAlign(object):
+    def __init__(self):
+        pass
+    def build(self):
+        return 0
+
+class TSAFusion(object):
+    def __init__(self):
+        pass
+    def build(self):
+        return 0
+
+class Reconstruction(object):
+    def __init__(self):
+        pass
+    def build(self):
+        return 0
