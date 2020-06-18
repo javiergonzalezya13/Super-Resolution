@@ -4,7 +4,7 @@ Este repositorio contiene el código utilizado para el trabajo de memoria de tit
 La súper-resolución es el conjunto de técnicas para aumentar la resolución espacial de una imagen. Métodos tales como la interpolación lineal o bicúbica solo le dan cierto valor a la información faltante mediante la ponderación de los pixeles adyacentes y que la imagen tenga cierta coherencia a nivel de color, mientras que la súper-resolución busca generar detalles acordes aproximando el resultado a la imagen correspondiente en alta resolución.
 
 <p align="center">
-  <img height="300" src="/images/super resolution.png">  
+  <img height="400" src="/images/super resolution.png">  
 </p>
 
 Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Resolution" (FRVSR) [1] y "Temporally Coherent GAN for Video Super-Resolution" (TecoGAN) [2].
