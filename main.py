@@ -10,10 +10,11 @@ import yaml
 
 from FRVSR import *
 from TecoGAN import *
-from utils import generate_frames
+from EDVR import EDVR
+from EDVR_v2 import EDVR as EDVR_v2
+from yoloV3_predict import YoloV3
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
 
 def parse_args():
     ap = argparse.ArgumentParser(description='Frame-Recurrent Video Super Resolution')
@@ -53,11 +54,16 @@ if __name__ == '__main__':
         sys.exit(0)
 
     # MODEL
+    # if configs['stage']['train'] or configs['stage']['eval'] or configs['stage']['run'] or configs['stage']['run_image']:
     if configs['stage']['train'] or configs['stage']['eval'] or configs['stage']['run']:
         if configs['model'] == 'frvsr':
             model = FrameRecurrentVideoSR(LR_shape, HR_shape, OUTPUT_DIR, configs)
         elif configs['model'] == 'tecogan':
             model = TecoGAN(LR_shape, HR_shape, OUTPUT_DIR, configs)
+        elif configs['model'] == 'edvr':
+            model = EDVR(LR_shape, HR_shape, OUTPUT_DIR, configs)
+        elif configs['model'] == 'edvr_v2':
+            model = EDVR_v2(configs, OUTPUT_DIR, inp_shape=LR_shape, nframes=5)
         else:
             print('[ERROR] Not valid model selected.')
             sys.exit(0)
@@ -75,3 +81,12 @@ if __name__ == '__main__':
     if configs['stage']['run']:
         # model.run(configs)
         model.run()
+
+    # if configs['stage']['run_image']:
+    #     model.run_image()
+
+    # RECOGNITION
+    K.clear_session()
+    if configs['stage']['rec']:
+        model = YoloV3(configs)
+        model.predict()

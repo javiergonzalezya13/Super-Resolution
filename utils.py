@@ -1,43 +1,21 @@
 import math
-
-import numpy as np
 import os
+
 import cv2
-def generate_frames(configs, output_dir):
-    videos = [f for f in os.listdir(configs['data']['videos'])
-              if os.path.isfile(os.path.join(configs['data']['videos'], f))]
-    n_scenes = 0
-    for n_video, video in enumerate(videos, start=0):
-        print('[INFO] Loading video %d/%d ...' % (n_video + 1, len(videos)))
-        cap = cv2.VideoCapture(os.path.join(configs['data']['videos'], video))
-        i = 0
-        while cap.isOpened:
-            HR_c_frames = []
-            LR_c_frames = []
-            for _ in range(configs['data']['c_frames']):
-                ret, HR_frame = cap.read()
+import numpy as np
 
-                # Video completed
-                if not ret:
-                    break
 
-                HR_frame = cv2.resize(HR_frame,
-                                      (configs['data']['high_res'], configs['data']['high_res']),
-                                      interpolation=cv2.INTER_CUBIC)
-                HR_c_frames.append(HR_frame)
+def check_yaml(configs):
+    if not 'train' in configs:
+        configs['stage']['train'] = False
+    if not 'eval' in configs['stage']:
+        configs['stage']['eval'] = False
+    if not 'run' in configs:
+        configs['stage']['run'] = False
+    if not 'rec' in configs:
+        configs['stage']['rec'] = False
 
-            # Video completed
-            if not ret:
-                break
-            np.save(os.path.join(output_dir, 'HR_train_%d_%d' % (n_video, i)), HR_c_frames)
-            i += 1
-            n_scenes += 1
-
-            if n_scenes % 50 == 0:
-                print('[INFO] Scenes loaded: %d' % n_scenes)
-        print('[INFO] Total scenes loaded: %d' % n_scenes)
-    cap.release()
-    return 0
+    
 
 def get_frames(video, configs):
     cap = cv2.VideoCapture(video)
@@ -58,7 +36,6 @@ def get_frames(video, configs):
             hr_c_frames.append(hr_frame)
         if ret:
             valid_frames = True
-
     cap.release()
     return hr_c_frames
 
