@@ -54,13 +54,13 @@ if __name__ == '__main__':
 
     # Check neuronal network to use
     if configs['stage']['train'] or configs['stage']['eval'] or configs['stage']['run']:
-        if configs['model'] == 'frvsr':
+        if configs['cnn']['model'] == 'frvsr':
             MODEL = FrameRecurrentVideoSR(LR_SHAPE, HR_SHAPE, OUTPUT_DIR, configs)
-        elif configs['model'] == 'tecogan':
+        elif configs['cnn']['model'] == 'tecogan':
             MODEL = TecoGAN(LR_SHAPE, HR_SHAPE, OUTPUT_DIR, configs)
-        # elif configs['model'] == 'edvr':
+        # elif configs['cnn']['model'] == 'edvr':
         #     MODEL = EDVR(LR_SHAPE, HR_SHAPE, OUTPUT_DIR, configs)
-        # elif configs['model'] == 'edvr_v2':
+        # elif configs['cnn']['model'] == 'edvr_v2':
         #     MODEL = EDVR_v2(configs, OUTPUT_DIR, inp_shape=LR_SHAPE, nframes=5)
         else:
             print('[ERROR] Not valid model selected.')
