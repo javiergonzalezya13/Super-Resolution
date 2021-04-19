@@ -27,6 +27,7 @@ Las etapas habilitadas en la ejecución del programa son las siguientes:
 Para realizar cualquier acción es necesario un archivo de configuración `.yaml` como único parámetro de entrada y el cual se indica al momento de la ejecución del programa. 
 
 **Ejemplo:**
+
 `$ python3 main.py --yaml_file FRVSR.yaml`
 
 El archivo `.yaml` posee la misma estructura tanto para FRVSR como TecoGAN, excepto por un parámetro exclusivo de TecoGAN que, en caso de que existiese, indica el archivo con los valores de los parámetros internos de su discriminador.  El siguiente ejemplo contiene todos los parámetros que se pueden configurar, seguido de la descripción correspondiente de cada uno. 
