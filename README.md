@@ -10,6 +10,15 @@ La súper-resolución es el conjunto de técnicas para aumentar la resolución e
 Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Resolution" (FRVSR) [1] y "Temporally Coherent GAN for Video Super-Resolution" (TecoGAN) [2].
 
 ## Funcionamiento
+
+Para evitar problemas de compatibilidad de las bibliotecas utilizadas se debe tener el archivo `Pipfile` y utilizar `pipenv`, el entorno virtual para Python.
+
+`$ sudo apt install pipenv`
+
+`$ pipenv shell`
+
+De esta manera solo se debe ejecutar el programa dentro de este entorno.
+
 Las etapas habilitadas en la ejecución del programa son las siguientes:
 * __Entrenamiento__: Entrenamiento de la red neuronal seleccionada bajo los parámetros definidos.
 * __Evaluación__: Procesamiento de uno o varios videos, lo cual da como resultado el  archivo `metrics.txt` que contiene las diferentes métricas calculadas.
@@ -18,7 +27,7 @@ Las etapas habilitadas en la ejecución del programa son las siguientes:
 Para realizar cualquier acción es necesario un archivo de configuración `.yaml` como único parámetro de entrada y el cual se indica al momento de la ejecución del programa. 
 
 **Ejemplo:**
-`python3 main.py --yaml_file FRVSR.yaml`
+`$ python3 main.py --yaml_file FRVSR.yaml`
 
 El archivo `.yaml` posee la misma estructura tanto para FRVSR como TecoGAN, excepto por un parámetro exclusivo de TecoGAN que, en caso de que existiese, indica el archivo con los valores de los parámetros internos de su discriminador.  El siguiente ejemplo contiene todos los parámetros que se pueden configurar, seguido de la descripción correspondiente de cada uno. 
 
@@ -121,7 +130,7 @@ Para la red TecoGAN,  se aclara que el archivo `pretrained_model` contiene los v
 
 ### Evaluación
 
-La evaluación calcula las métricas de Peak Signal-to-Ratio (PSNR), Structual Similarity Index Measure (SSIM), tiempos de inferencia de la red neuronal y la cantidad de cuadros por segundo, guardando todos estos datos en un archivo `.txt` Adicionalmente, guarda el o los archivos de video generados por las estimaciones de la red neuronal, dando la opción de ver en vivo el resultado del procesamiento al habilitar el parámetro `watch`. Todos los archivos obtenidos durante la evaluación quedan almacenados en el directorio `output_dir`.
+La evaluación calcula las métricas de Peak Signal-to-Ratio (PSNR), Structual Similarity Index Measure (SSIM), tiempos de inferencia de la red neuronal, la cantidad de cuadros por segundo y la métrica YOLO, guardando todos estos datos en un archivo `.txt` Adicionalmente, guarda el o los archivos de video generados por las estimaciones de la red neuronal, dando la opción de ver en vivo el resultado del procesamiento al habilitar el parámetro `watch`. Todos los archivos obtenidos durante la evaluación quedan almacenados en el directorio `output_dir`.
 
 | Parámetro | Descripción                    |
 | ------------- | ------------------------------ |
