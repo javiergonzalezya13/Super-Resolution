@@ -104,8 +104,8 @@ class FrameRecurrentVideoSR(object):
         # Load pretrained FRVSR and set current iteration
         if 'pretrained_model' in self.configs['train']:
             print('[INFO] Loading pretrained model...')
-            self.frvsr.load_weights(self.configs['train']['pretrained_model'])
-            name = os.path.splitext(self.configs['train']['pretrained_model'])[0]
+            self.frvsr.load_weights(self.configs['cnn']['pretrained_model'])
+            name = os.path.splitext(self.configs['cnn']['pretrained_model'])[0]
             i = int(name.split('_')[-1])
             print('[INFO] Model ready.')
 
@@ -139,13 +139,13 @@ class FrameRecurrentVideoSR(object):
                     prev_est_batch = np.array([np.zeros(self.hr_shape)])
 
                 # Frame zero of the second and onward sequences
-                elif b % self.configs['data']['c_frames'] == 0:
+                elif b % self.configs['train']['c_frames'] == 0:
                     lr_batch = np.append(lr_batch, [single_lr], axis=0)
                     prev_lr_batch = np.append(prev_lr_batch, [np.zeros(self.lr_shape)], axis=0)
                     prev_est_batch = np.append(prev_est_batch, [np.zeros(self.hr_shape)], axis=0)
 
                 # Frame one of the sequence
-                elif b % self.configs['data']['c_frames'] == 1:
+                elif b % self.configs['train']['c_frames'] == 1:
                     lr_batch = np.append(lr_batch, [single_lr], axis=0)
                     prev_lr_batch = np.append(prev_lr_batch, [lr_batch[b-1]], axis=0)
                     lr_frame = np.array([lr_batch[b-1]])
@@ -207,7 +207,7 @@ class FrameRecurrentVideoSR(object):
                 self.frvsr.save_weights(frvsr_weights)
                 print('[INFO] Model saved.')
                 yaml_file = os.path.join(self.output_dir, 'FRVSR.yaml')
-                self.configs['train']['pretrained_model'] = frvsr_weights
+                self.configs['cnn']['pretrained_model'] = frvsr_weights
                 with open(yaml_file, 'w') as file:
                     yaml.dump(self.configs, file, default_flow_style=False)
 
@@ -222,8 +222,8 @@ class FrameRecurrentVideoSR(object):
 
         if self.configs['eval']['pretrained_model']:
             self.configs['eval']['pretrained_model'] = os.path.join(self.configs['root_dir'],
-                                                                    self.configs['eval']['pretrained_model'])
-            self.frvsr.load_weights(self.configs['eval']['pretrained_model'])
+                                                                    self.configs['cnn']['pretrained_model'])
+            self.frvsr.load_weights(self.configs['cnn']['pretrained_model'])
 
         # Initialize variables and directories
         print('[INFO] Model ready.')
@@ -397,8 +397,8 @@ class FrameRecurrentVideoSR(object):
         # Load pretrained model
         print('[INFO] Loading pretrained model...')
 
-        if self.configs['run']['pretrained_model']:
-            self.frvsr.load_weights(self.configs['run']['pretrained_model'])
+        if self.configs['cnn']['pretrained_model']:
+            self.frvsr.load_weights(self.configs['cnn']['pretrained_model'])
 
         # Initialize variables
         print('[INFO] Model ready.')
