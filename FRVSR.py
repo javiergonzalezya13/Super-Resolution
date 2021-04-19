@@ -1,5 +1,5 @@
 '''
-Frame-Recurrent VVideo Super Resolution implementation
+Frame-Recurrent Video Super-Resolution
 '''
 import datetime
 import os
@@ -10,7 +10,6 @@ import numpy as np
 import yaml
 from keras.optimizers import Adam
 from keras.utils import plot_model
-from skimage.measure import compare_ssim as ssim
 
 from layers import *
 from utils import *
@@ -23,7 +22,9 @@ class FrameRecurrentVideoSR(object):
         self.output_dir = output_dir
         self.configs = configs
 
+    # Building FRVSR architecture process
     def build(self):
+        # Build FRVSR blocks
         print('[INFO] Creating FNet...')
         self.fnet = FNet(self.lr_shape).build()
         print('[INFO] FNet ready.')
@@ -47,7 +48,8 @@ class FrameRecurrentVideoSR(object):
         print('[INFO] Creating Space to Depth...')
         self.space2depth = Space2Depth(self.hr_shape).build()
         print('[INFO] Space to Depth ready.')
-
+        
+        # Save blocks images 
         if self.configs['stage']['train']:
             os.makedirs(self.output_dir)
             plot_model(self.fnet, to_file=os.path.join(self.output_dir, 'FNet.jpg'),
@@ -63,8 +65,8 @@ class FrameRecurrentVideoSR(object):
             plot_model(self.space2depth, to_file=os.path.join(self.output_dir, 'Space2Depth.jpg'),
                        show_shapes=True, show_layer_names=True)
 
+        # Assemble FRVSR
         print('[INFO] Creating Frame-Recurrent Video Super Resolution...')
-
         I_LR_t = Input(shape=self.lr_shape, name='I_LR_t')
         I_LR_t_1 = Input(shape=self.lr_shape, name='I_LR_t_1')
         I_est_t_1 = Input(shape=self.hr_shape, name='I_est_t_1')
@@ -77,6 +79,8 @@ class FrameRecurrentVideoSR(object):
 
         self.frvsr = Model([I_LR_t, I_LR_t_1, I_est_t_1],
                            [I_est_t, I_LR_est_t_1])
+        
+        # Set loss functions and learning rate
         self.opt = Adam(lr=1e-4)
         self.frvsr.compile(loss=['mean_squared_error', 'mean_squared_error'],
                            loss_weights=[1., 1.], optimizer=self.opt)
@@ -86,25 +90,18 @@ class FrameRecurrentVideoSR(object):
                        show_shapes=True, show_layer_names=True)
 
         print('[INFO] Frame-Recurrent Video Super Resolution ready.')
-
+    
+    # Training process
     def train(self):
         i = 0
         samples_dir = os.path.join(self.output_dir, 'Samples')
         os.makedirs(samples_dir)
         checkpoints_dir = os.path.join(self.output_dir, 'Checkpoints')
         os.makedirs(checkpoints_dir)
-        videos = []
-        if isinstance(self.configs['data']['videos'], list):
-            for data_dir in self.configs['data']['videos']:
-                for f in os.listdir(data_dir):
-                    if os.path.isfile(os.path.join(data_dir, f)):
-                        videos.append(os.path.join(data_dir, f))
-        else:
-            data_dir = self.configs['data']['videos']
-            for f in os.listdir(data_dir):
-                if os.path.isfile(os.path.join(data_dir, f)):
-                    videos.append(os.path.join(data_dir, f))
 
+        videos = get_videos(configs) 
+
+        # Load pretrained FRVSR and set current iteration
         if 'pretrained_model' in self.configs['train']:
             print('[INFO] Loading pretrained model...')
             self.frvsr.load_weights(self.configs['train']['pretrained_model'])
@@ -117,7 +114,6 @@ class FrameRecurrentVideoSR(object):
         while i < self.configs['train']['iterations'] + 1:
 
             # Choose batch index
-            # t1 = datetime.datetime.now()
             rand_batch = np.random.randint(0, len(videos), size=self.configs['train']['batch_size'])
 
             # Generate HR batch samples at t
@@ -167,17 +163,12 @@ class FrameRecurrentVideoSR(object):
                     prev_est_frame = np.array([prev_est_batch[b-2]])
                     est_frame, _ = self.frvsr.predict([lr_frame, prev_lr_frame, prev_est_frame])
                     prev_est_batch = np.append(prev_est_batch, [est_frame[0]], axis=0)
-            # t2 = datetime.datetime.now()
-            # t_total = t2 - t1
-            # print('[INFO] Processing time: %f seconds' % t_total.total_seconds())
-            # Train net
+            
+            # Train FRVSR 
             net_input = [lr_batch, prev_lr_batch, prev_est_batch]
             net_output = [hr_batch, lr_batch]
             loss = self.frvsr.train_on_batch(net_input, net_output)
-            # t2 = datetime.datetime.now()
-            # t_total = t2 - t1
-            # print('[INFO] Training time: %f seconds' % t_total.total_seconds())
-
+            
             # Training information
             if i % self.configs['train']['info_freq'] == 0:
                 print('[INFO]', '-'*15, 'Iteration %d' % i, '-'*15)
@@ -185,7 +176,6 @@ class FrameRecurrentVideoSR(object):
 
             # Generate sample
             if i % self.configs['train']['sample_freq'] == 0:
-                # t1 = datetime.datetime.now()    
                 img_window_est = np.array([])
                 img_window_hr = np.array([])
                 img_window_lr = np.array([])
@@ -210,14 +200,9 @@ class FrameRecurrentVideoSR(object):
 
                 cv2.imwrite(os.path.join(samples_dir, 'Sample_%d.jpg' % i), img_window)
 
-                # t2 = datetime.datetime.now()
-                # t_total = t2 - t1
-                # print('[INFO] Generated samples time: %f seconds' % t_total.total_seconds())
-
+            # Save checkpoint
             if i % self.configs['train']['checkpoint_freq'] == 0:
-                # t1 = datetime.datetime.now()
                 print('[INFO] Saving model...')
-                # frvsr.save('frvsr_model_%d.h5' % i)
                 frvsr_weights = os.path.join(checkpoints_dir, 'frvsr_model_weights_%d.h5' % i)
                 self.frvsr.save_weights(frvsr_weights)
                 print('[INFO] Model saved.')
@@ -226,21 +211,21 @@ class FrameRecurrentVideoSR(object):
                 with open(yaml_file, 'w') as file:
                     yaml.dump(self.configs, file, default_flow_style=False)
 
-                # t2 = datetime.datetime.now()
-                # t_total = t2 - t1
-                # print('[INFO] Saving model time: %f seconds' % t_total.total_seconds())
-
             i += 1
 
         print('[INFO] Training process ready.')
 
+    # Evaluation process
     def eval(self):
-
+        # Load pretrained model
         print('[INFO] Loading pretrained model...')
 
         if self.configs['eval']['pretrained_model']:
+            self.configs['eval']['pretrained_model'] = os.path.join(self.configs['root_dir'],
+                                                                    self.configs['eval']['pretrained_model'])
             self.frvsr.load_weights(self.configs['eval']['pretrained_model'])
 
+        # Initialize variables and directories
         print('[INFO] Model ready.')
         print('[INFO] Evaluating model...')
         os.makedirs(self.configs['eval']['output_dir'], exist_ok=True)
@@ -252,182 +237,170 @@ class FrameRecurrentVideoSR(object):
         window_rows = 2
         window_cols = 2
 
-        est_frame = np.array([np.zeros((self.hr_shape[0] * rows, self.hr_shape[1] * cols, self.hr_shape[2]))])
+        est_frame = np.array([np.zeros((self.hr_shape[0]*rows,
+                                        self.hr_shape[1]*cols,
+                                        self.hr_shape[2]))])
 
-        sub_prev_lr_frames = np.repeat(np.array([np.zeros(self.lr_shape)]), rows * cols, axis=0)
-        sub_est_frames = np.repeat(np.array([np.zeros(self.hr_shape)]), rows * cols, axis=0)
+        sub_prev_lr_frames = np.repeat(np.array([np.zeros(self.lr_shape)]), rows*cols, axis=0)
+        sub_est_frames = np.repeat(np.array([np.zeros(self.hr_shape)]), rows*cols, axis=0)
 
         t = 0
         t1 = datetime.datetime.now()
 
-        if self.configs['eval']['video']:
-            cap = cv2.VideoCapture(self.configs['eval']['video'])
-        else:
-            print('[ERROR] Not a valid video.')
-            sys.exit(0)
-            # cap = cv2.VideoCapture(0)
+        total_psnr = 0
+        total_ssim = 0
+        total_bic_psnr = 0
+        total_bic_ssim = 0
 
-        # video_out = cv2.VideoWriter('video_test.avi',
-        #                             cv2.VideoWriter_fourcc(*'DIVX'),
-        #                             10,
-        #                             (self.configs['data']['high_res'] * rows * window_rows,
-        #                              self.configs['data']['high_res'] * cols * window_cols))
         os.makedirs(self.configs['eval']['output_dir'], exist_ok=True)
-        video_file = os.path.join(self.configs['eval']['output_dir'], 'video.avi')
+        video_file = os.path.join(self.configs['eval']['output_dir'], self.configs['eval']['output_file'])
         video_out = cv2.VideoWriter(video_file,
-                            cv2.VideoWriter_fourcc(*'DIVX'),
-                            10,
-                            (self.configs['data']['high_res'] * rows,
-                             self.configs['data']['high_res'] * cols))
+                                    cv2.VideoWriter_fourcc(*'DIVX'),
+                                    10,
+                                    (self.hr_shape[0]*rows,
+                                     self.hr_shape[1]*cols))
+        # Process videos
+        videos = get_videos(configs)
+        for video in videos:
+            cap = cv2.VideoCapture(video)
+            while cap.isOpened:
+                img_windows = []
+                img_window = np.array([])
 
-        while cap.isOpened:
-            img_windows = []
-            img_window = np.array([])
+                # Resize to high and low resolution 
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                frame = normalize(frame)
 
-            ret, frame = cap.read()
-            if not ret:
-                break
-            frame = normalize(frame)
+                hr_frame = cv2.resize(frame,
+                                      (self.hr_shape[0]*rows,
+                                       self.hr_shape[1]*cols),
+                                      interpolation=cv2.INTER_CUBIC)
 
-            hr_frame = cv2.resize(frame,
-                                  (self.configs['data']['high_res'] * rows, self.configs['data']['high_res'] * cols),
-                                  interpolation=cv2.INTER_CUBIC)
+                lr_frame = np.array([cv2.resize(cv2.GaussianBlur(hr_frame, (5, 5), 0),
+                                                (self.lr_shape[0]*rows,
+                                                 self.lr_shape[1]*cols),
+                                    interpolation=cv2.INTER_CUBIC)])
 
-            lr_frame = np.array([cv2.resize(cv2.GaussianBlur(hr_frame, (5, 5), 0),
-                                            (self.configs['data']['low_res'] * rows,
-                                             self.configs['data']['low_res'] * cols),
-                                interpolation=cv2.INTER_CUBIC)])
+                # Get low resolution sub images
+                sub_lr_frames = np.array([])
+                for i in range(rows):
+                    for j in range(cols):
+                        sub_lr_frame = lr_frame[0, i*self.lr_shape[0]:(i+1)*self.lr_shape[0],
+                                                j*self.lr_shape[1]:(j+1)*self.lr_shape[1]]
 
-            sub_hr_frames = np.array([])
-            sub_lr_frames = np.array([])
-            for i in range(rows):
-                for j in range(cols):
-                    sub_lr_frame = lr_frame[0, i * self.configs['data']['low_res']: (i+1) * self.configs['data']['low_res'],
-                                            j * self.configs['data']['low_res']: (j+1) * self.configs['data']['low_res']]
+                        try:
+                            sub_lr_frames = np.append(sub_lr_frames, [sub_lr_frame], axis=0)
 
-                    try:
-                        sub_lr_frames = np.append(sub_lr_frames, [sub_lr_frame], axis=0)
+                        except ValueError:
+                            sub_lr_frames = np.array([sub_lr_frame])
 
-                    except ValueError:
-                        sub_lr_frames = np.array([sub_lr_frame])
+                # Get estimated sub images
+                inference_time_1 = datetime.datetime.now()
+                sub_est_frames, _ = self.frvsr.predict([sub_lr_frames,
+                                                        sub_prev_lr_frames,
+                                                        sub_est_frames])
+                inference_time_2 = datetime.datetime.now()
 
-            inference_time_1 = datetime.datetime.now()
-            sub_est_frames, _ = self.frvsr.predict([sub_lr_frames,
-                                                    sub_prev_lr_frames,
-                                                    sub_est_frames])
-            inference_time_2 = datetime.datetime.now()
+                # Arrange estimated sub images
+                for i in range(rows):
+                    for j in range(cols):
+                        est_frame[:, i*self.hr_shape[0]:(i+1)*self.hr_shape[0], j*self.hr_shape[1]:(j+1)*self.hr_shape[1]] = sub_est_frames[i*cols+j]
 
-            for i in range(rows):
-                for j in range(cols):
-                    est_frame[:, i * self.configs['data']['high_res']: (i+1) * self.configs['data']['high_res'], j * self.configs['data']['high_res']: (j+1) * self.configs['data']['high_res']] = sub_est_frames[i*cols + j]
+                # Calculate interpolations
+                bicubic_frame = cv2.resize(lr_frame[0], (self.hr_shape[0]*rows, self.hr_shape[1]*cols),
+                                           interpolation=cv2.INTER_CUBIC)
+                nearest_frame = cv2.resize(lr_frame[0], (self.hr_shape[0]*rows, self.hr_shape[1]*cols),
+                                           interpolation=cv2.INTER_NEAREST)
 
-            bicubic_frame = cv2.resize(lr_frame[0], (self.configs['data']['high_res'] * rows, self.configs['data']['high_res'] * cols),
-                                       interpolation=cv2.INTER_CUBIC)
+                sub_prev_lr_frames = sub_lr_frames
+                
+                border = 256 - 64
 
-            sub_prev_lr_frames = sub_lr_frames
+                lr_scale = cv2.copyMakeBorder(lr_frame[0], border, border, border, border, cv2.BORDER_CONSTANT)
 
-            nearest_frame = cv2.resize(lr_frame[0], (self.configs['data']['high_res'] * rows, self.configs['data']['high_res'] * cols),
-                                       interpolation=cv2.INTER_NEAREST)
-
-            border = 256 - 64
-
-            lr_scale = cv2.copyMakeBorder(lr_frame[0], border, border, border, border, cv2.BORDER_CONSTANT)
-
-            # img_windows.append(hr_frame)
-            # print(hr_frame.dtype)
-            img_windows.append(lr_scale)
-            img_windows.append(est_frame[0])
-            # print(est_frame[0].dtype)
-            img_windows.append(bicubic_frame)
-            # print(bicubic_frame.dtype)
-            img_windows.append(nearest_frame)
-            # print(nearest_frame.dtype)
-
-            img_window = np.zeros((window_rows * self.hr_shape[0] * rows,
-                                   window_cols * self.hr_shape[1] * cols,
-                                   self.hr_shape[2]))
+                img_windows.append(lr_scale)
+                img_windows.append(est_frame[0])
+                img_windows.append(bicubic_frame)
+                img_windows.append(nearest_frame)
             
-            # for img in img_windows:
-            #     try:
-            #         img_window = np.concatenate((img_window, img), axis=0)
-            #     except ValueError:
-            #         img_window = np.array(img)
+                img_window = np.zeros((window_rows*self.hr_shape[0]*rows,
+                                       window_cols*self.hr_shape[1]*cols,
+                                       self.hr_shape[2]))
 
-            # for i in range(window_rows):
-            #     for j in range(window_cols):
-            #         img_window[self.hr_shape[0] * rows * i:self.hr_shape[0] * rows * (i+1), self.hr_shape[1]  * cols * j:self.hr_shape[1] * cols * (j+1)] = img_windows[i*window_cols + j]
+                t2 = datetime.datetime.now()
+                delta_t = t2 - t1
+                t1 = datetime.datetime.now()
 
-            # img_window = np.concatenate((hr_frame, est_frame[0]), axis=1)
-            # img_window = np.concatenate((img_window, bicubic_frame), axis=1)
-            # img_window = np.concatenate((img_window, nearest_frame), axis=1)
+                fps = int(1 / delta_t.total_seconds())
+                delta_inference = inference_time_2 - inference_time_1
+                inference_time = delta_inference.total_seconds() * 1000
 
-            t2 = datetime.datetime.now()
-            delta_t = t2 - t1
-            t1 = datetime.datetime.now()
+                # Calculate metrics
+                if t % 10 == 0:
+                    nearest_psnr = psnr(nearest_frame, hr_frame)
+                    bic_psnr = psnr(bicubic_frame, hr_frame)
+                    est_psnr = psnr(hr_frame, est_frame[0])
+                    total_psnr += est_psnr
+                    total_bic_psnr += bic_psnr
 
-            fps = int(1 / delta_t.total_seconds())
-            delta_inference = inference_time_2 - inference_time_1
-            inference_time = delta_inference.total_seconds() * 1000
+                    nearest_ssim = ssim(nearest_frame, hr_frame)
+                    bic_ssim = ssim(bicubic_frame, hr_frame)
+                    est_ssim = ssim(hr_frame, est_frame[0])
+                    total_ssim += est_ssim
+                    total_bic_ssim += bic_ssim
 
-            if t % 10 == 0:                
-                gray_hr_frame = cv2.cvtColor(hr_frame, cv2.COLOR_BGR2GRAY)
-                gray_nearest_frame = cv2.cvtColor(nearest_frame, cv2.COLOR_BGR2GRAY)
-                gray_bicubic_frame = cv2.cvtColor(bicubic_frame, cv2.COLOR_BGR2GRAY)
-                gray_est_frame = cv2.cvtColor(est_frame[0].astype('Float32'), cv2.COLOR_BGR2GRAY)
+                    print('\n[INFO] Running at: %d[fps] \t FRVSR inference time: %d[ms] \t Total inference time: %d[ms]' % (fps, inference_time, delta_t.total_seconds() * 1000))
+                    print('[INFO] Nearest PSNR: %f \t Bicubic PSNR: %f \t FRVSR PSNR: %f' % (nearest_psnr, bic_psnr, est_psnr))
+                    print('[INFO] Nearest SSIM: %f \t Bicubic SSIM: %f \t FRVSR SSIM: %f' % (nearest_ssim, bic_ssim, est_ssim))
+                    f.write('Frame:\t%d\tInference time:\t%d\tPSNR:\t%f\tSSIM:\t%f\n' % (t, inference_time, est_psnr, est_ssim))
+                t += 1
 
-                nearest_psnr = psnr(nearest_frame, hr_frame)
-                bic_psnr = psnr(bicubic_frame, hr_frame)
-                est_psnr = psnr(hr_frame, est_frame[0])
+                # Show and write video
+                if configs['eval']['watch']:
+                    text_window = 'FPS:%d' % fps
+                    window_title = 'Original / FRVSR / Bicubic / Nearest'
+                    
+                    cv2.putText(img_window, text_window, (0, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 1, 0), 1, cv2.LINE_4)
 
-                nearest_ssim = ssim(gray_nearest_frame, gray_hr_frame, full=True)[0]
-                bic_ssim = ssim(gray_bicubic_frame, gray_hr_frame, full=True)[0]
-                est_ssim = ssim(gray_hr_frame, gray_est_frame, full=True)[0]
+                    img_window_2 = denormalize(est_frame[0])
+                    cv2.imshow(window_title, img_window_2)
 
-                print('\n[INFO] Running at: %d[fps] \t FRVSR inference time: %d[ms] \t Total inference time: %d[ms]' % (fps, inference_time, delta_t.total_seconds() * 1000))
-                print('[INFO] Nearest PSNR: %f \t Bicubic PSNR: %f \t FRVSR PSNR: %f' % (nearest_psnr, bic_psnr, est_psnr))
-                print('[INFO] Nearest SSIM: %f \t Bicubic SSIM: %f \t FRVSR SSIM: %f' % (nearest_ssim, bic_ssim, est_ssim))
-                f.write('Frame:\t%d\tInference time:\t%d\tPSNR:\t%f\tSSIM:\t%f\n' % (t, inference_time, est_psnr, est_ssim))
-            t += 1
-
-            text_window = 'FPS:%d' % fps
-
-            window_title = 'Original / Frame-Recurrent Video Super Resolution / Bicubic / Nearest'
-            cv2.putText(img_window, text_window, (0, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 1, 0), 1, cv2.LINE_4)
-
-            # video_out.write(denormalize(est_frame[0]))
-
-            # img_window_2 = denormalize(img_window)
-
-            # img_window_2 = cv2.threshold(est_frame[0], 0.0, 0.0, cv2.THRESH_TOZERO)[1]
-            img_window_2 = denormalize(est_frame[0])
-            # img_window_2 = cv2.threshold(img_window_2, 255, 255, cv2.THRESH_TRUNC)[1]
-
-            if est_frame[0].max() > 1.0:
-                print('[ERROR] Max value exceeded: %d' % est_frame[0].max())            
-
-            video_out.write(img_window_2)
-            cv2.imshow(window_title, img_window_2)
-            
-            key = cv2.waitKey(1)
-            if key == ord('p'):
-                while True:
-                    # cv2.imshow('Low Resolution Frame', lr_frame[0])
-                    cv2.imshow(window_title, img_window)
-                    if cv2.waitKey(1) == ord('p'):
+                    key = cv2.waitKey(1)
+                    if key == ord('p'):
+                        while True:
+                            cv2.imshow(window_title, img_window)
+                            if cv2.waitKey(1) == ord('p'):
+                                break
+                    elif key == ord('q'):
                         break
-            elif key == ord('q'):
-                break
+
+                video_out.write(img_window_2)
+
+        # Show average metrics        
+        total_psnr = total_psnr / (t // 10)
+        total_ssim = total_ssim / (t // 10)
+
+        total_bic_psnr = total_bic_psnr / (t // 10)
+        total_bic_ssim = total_bic_ssim / (t // 10)
+        
+        print('\n[INFO] Avg. Bicubic PSNR: %f\tAvg. FRVSR PSNR: %f' % (total_bic_psnr, total_psnr))
+        print('[INFO] Avg. Bicubic SSIM: %f\tAvg. FRVSR SSIM: %f' % (total_bic_ssim, total_ssim))
+
         f.close()
         cv2.destroyAllWindows()
-        # video_out.release()
         print('\n[INFO] Video stopped.')
 
+    # Run FRVSR on single video or camera
     def run(self):
+        # Load pretrained model
         print('[INFO] Loading pretrained model...')
 
         if self.configs['run']['pretrained_model']:
             self.frvsr.load_weights(self.configs['run']['pretrained_model'])
 
+        # Initialize variables
         print('[INFO] Model ready.')
         print('[INFO] Running model...')
 
@@ -437,30 +410,28 @@ class FrameRecurrentVideoSR(object):
         window_rows = 2
         window_cols = 2
 
-        prev_lr_frame = np.array([np.zeros((self.lr_shape[0] * rows, self.lr_shape[1] * cols, self.lr_shape[2]))])
-        prev_est_frame = np.array([np.zeros((self.hr_shape[0] * rows, self.hr_shape[1] * cols, self.hr_shape[2]))])
+        prev_lr_frame = np.array([np.zeros((self.lr_shape[0]*rows, self.lr_shape[1]*cols, self.lr_shape[2]))])
+        prev_est_frame = np.array([np.zeros((self.hr_shape[0]*rows, self.hr_shape[1]*cols, self.hr_shape[2]))])
 
-        est_frame = np.array([np.zeros((self.hr_shape[0] * rows, self.hr_shape[1] * cols, self.hr_shape[2]))])
+        est_frame = np.array([np.zeros((self.hr_shape[0]*rows, self.hr_shape[1]*cols, self.hr_shape[2]))])
 
-        sub_prev_lr_frames = np.repeat(np.array([np.zeros(self.lr_shape)]), rows * cols, axis=0)
-        sub_est_frames = np.repeat(np.array([np.zeros(self.hr_shape)]), rows * cols, axis=0)
+        sub_prev_lr_frames = np.repeat(np.array([np.zeros(self.lr_shape)]), rows*cols, axis=0)
+        sub_est_frames = np.repeat(np.array([np.zeros(self.hr_shape)]), rows*cols, axis=0)
 
-        t = 0
         t1 = datetime.datetime.now()
+        t = 0
 
-        # video_file = os.path.join(self.configs['eval']['output_dir'], 'video.avi')
-        # video_file = 'video.avi'
-        # video_out = cv2.VideoWriter(video_file,
-        #                     cv2.VideoWriter_fourcc(*'DIVX'),
-        #                     10,
-        #                     (self.configs['data']['high_res'] * rows * window_rows,
-        #                      self.configs['data']['high_res'] * cols * window_cols))
+        total_psnr = 0
+        total_ssim = 0
+        total_bic_psnr = 0
+        total_bic_ssim = 0
 
         if self.configs['run']['video']:
             cap = cv2.VideoCapture(self.configs['run']['video'])
         else:
             cap = cv2.VideoCapture(0)
 
+        # Process video
         while cap.isOpened:
             img_windows = []
             img_window = np.array([])
@@ -468,23 +439,24 @@ class FrameRecurrentVideoSR(object):
             ret, frame = cap.read()
             if not ret:
                 break
-            # frame = normalize(frame)
 
+            # Resize to high and low resolution
             hr_frame = cv2.resize(frame,
-                                  (self.configs['data']['high_res'] * rows, self.configs['data']['high_res'] * cols),
+                                  (self.hr_shape[0]*rows,
+                                   self.hr_shape[1]*cols),
                                   interpolation=cv2.INTER_CUBIC)
 
             lr_frame = np.array([cv2.resize(cv2.GaussianBlur(hr_frame, (5, 5), 0),
-                                            (self.configs['data']['low_res'] * rows,
-                                             self.configs['data']['low_res'] * cols),
+                                            (self.lr_shape[0]*rows,
+                                             self.lr_shape[1]*cols),
                                 interpolation=cv2.INTER_CUBIC)])
 
-            sub_hr_frames = np.array([])
+            # Get low resolution sub images
             sub_lr_frames = np.array([])
             for i in range(rows):
                 for j in range(cols):
-                    sub_lr_frame = lr_frame[0, i * self.configs['data']['low_res']: (i+1) * self.configs['data']['low_res'],
-                                            j * self.configs['data']['low_res']: (j+1) * self.configs['data']['low_res']]
+                    sub_lr_frame = lr_frame[0, i*self.lr_shape[0]:(i+1)*self.lr_shape[0],
+                                            j*self.lr_shape[1]:(j+1)*self.lr_shape[1]]
 
                     try:
                         sub_lr_frames = np.append(sub_lr_frames, [sub_lr_frame], axis=0)
@@ -492,54 +464,44 @@ class FrameRecurrentVideoSR(object):
                     except ValueError:
                         sub_lr_frames = np.array([sub_lr_frame])
 
+            # Get estimated sub images
             inference_time_1 = datetime.datetime.now()
-
             sub_est_frames, _ = self.frvsr.predict([normalize(sub_lr_frames),
                                                     normalize(sub_prev_lr_frames),
                                                     normalize(sub_est_frames)])
-
             inference_time_2 = datetime.datetime.now()
 
+            # Arrange estimated sub images
             for i in range(rows):
                 for j in range(cols):
-                    est_frame[:, i * self.configs['data']['high_res']: (i+1) * self.configs['data']['high_res'], j * self.configs['data']['high_res']: (j+1) * self.configs['data']['high_res']] = sub_est_frames[i*cols + j]
+                    est_frame[:, i*self.hr_shape[0]:(i+1)*self.hr_shape[0], j*self.hr_shape[1]:(j+1)*self.hr_shape[1]] = sub_est_frames[i*cols+j]
 
-            bicubic_frame = cv2.resize(lr_frame[0], (self.configs['data']['high_res'] * rows, self.configs['data']['high_res'] * cols),
+            # Calculate interpolations
+            bicubic_frame = cv2.resize(lr_frame[0], (self.hr_shape[0]*rows, self.hr_shape[1]*cols),
                                        interpolation=cv2.INTER_CUBIC)
-
-            sub_prev_lr_frames = sub_lr_frames
-
-            nearest_frame = cv2.resize(lr_frame[0], (self.configs['data']['high_res'] * rows, self.configs['data']['high_res'] * cols),
+            nearest_frame = cv2.resize(lr_frame[0], (self.hr_shape[0]*rows, self.hr_shape[1]*cols),
                                        interpolation=cv2.INTER_NEAREST)
-
-            border = 256 - 64
+            
+            sub_prev_lr_frames = sub_lr_frames
+            
+            border = (self.hr_shape[0]*rows - self.lr_shape[0]*rows) // 2
 
             lr_scale = cv2.copyMakeBorder(lr_frame[0], border, border, border, border, cv2.BORDER_CONSTANT)
+
+            print(lr_scale.shape)
 
             img_windows.append(lr_scale)
             img_windows.append(denormalize(est_frame[0]))
             img_windows.append(bicubic_frame)
             img_windows.append(hr_frame)
 
-
-
-            img_window = np.zeros((window_rows * self.hr_shape[0] * rows,
-                                   window_cols * self.hr_shape[1] * cols,
+            img_window = np.zeros((window_rows*self.hr_shape[0]*rows,
+                                   window_cols*self.hr_shape[1]*cols,
                                    self.hr_shape[2]))
-
-            # for img in img_windows:
-            #     try:
-            #         img_window = np.concatenate((img_window, img), axis=0)
-            #     except ValueError:
-            #         img_window = np.array(img)
 
             for i in range(window_rows):
                 for j in range(window_cols):
-                    img_window[self.hr_shape[0] * rows * i:self.hr_shape[0] * rows * (i+1), self.hr_shape[1]  * cols * j:self.hr_shape[1] * cols * (j+1)] = img_windows[i*window_cols + j]
-
-            # img_window = np.concatenate((hr_frame, est_frame[0]), axis=1)
-            # img_window = np.concatenate((img_window, bicubic_frame), axis=1)
-            # img_window = np.concatenate((img_window, nearest_frame), axis=1)
+                    img_window[self.hr_shape[0]*rows*i:self.hr_shape[0]*rows*(i+1), self.hr_shape[1]*cols*j:self.hr_shape[1]*cols*(j+1)] = img_windows[i*window_cols+j]
 
             t2 = datetime.datetime.now()
             delta_t = t2 - t1
@@ -548,21 +510,26 @@ class FrameRecurrentVideoSR(object):
             fps = int(1 / delta_t.total_seconds())
             delta_inference = inference_time_2 - inference_time_1
             inference_time = delta_inference.total_seconds() * 1000
+             
+            # Calculate metrics
+            if t % 10 == 0:
+                nearest_psnr = psnr(nearest_frame, hr_frame)
+                bic_psnr = psnr(bicubic_frame, hr_frame)
+                est_psnr = psnr(hr_frame, est_frame[0])
+                total_psnr += est_psnr
+                total_bic_psnr += bic_psnr
+                 
+                nearest_ssim = ssim(nearest_frame, hr_frame)
+                bic_ssim = ssim(bicubic_frame, hr_frame)
+                est_ssim = ssim(hr_frame, est_frame[0])
+                total_ssim += est_ssim
+                total_bic_ssim += bic_ssim
 
-            gray_hr_frame = cv2.cvtColor(hr_frame, cv2.COLOR_BGR2GRAY)
-            gray_nearest_frame = cv2.cvtColor(nearest_frame, cv2.COLOR_BGR2GRAY)
-            gray_bicubic_frame = cv2.cvtColor(bicubic_frame, cv2.COLOR_BGR2GRAY)
-            gray_est_frame = cv2.cvtColor(est_frame[0].astype('Float32'), cv2.COLOR_BGR2GRAY)
+                print('\n[INFO] Running at: %d[fps] \t FRVSR inference time: %d[ms] \t Total inference time: %d[ms]' % (fps, inference_time, delta_t.total_seconds() * 1000))
+                print('[INFO] Nearest PSNR: %f \t Bicubic PSNR: %f \t FRVSR PSNR: %f' % (nearest_psnr, bic_psnr, est_psnr))
+                print('[INFO] Nearest SSIM: %f \t Bicubic SSIM: %f \t FRVSR SSIM: %f' % (nearest_ssim, bic_ssim, est_ssim))
 
-            # if t % 100 == 0:
-            #     print('\n[INFO] Running at: %d[fps] \t FRVSR inference time: %d[ms] \t Total inference time: %d[ms]' % (fps, inference_time, delta_t.total_seconds() * 1000))
-            #     print('[INFO] Nearest PSNR: %f \t Bicubic PSNR: %f \t FRVSR PSNR: %f' % (psnr(nearest_frame, hr_frame), psnr(bicubic_frame, hr_frame), psnr(hr_frame, est_frame[0])))
-            #     print('[INFO] Nearest SSIM: %f \t Bicubic SSIM: %f \t FRVSR SSIM: %f' % (ssim(gray_nearest_frame, gray_hr_frame, full=True)[0],
-            #                                                                              ssim(gray_bicubic_frame, gray_hr_frame, full=True)[0],
-            #                                                                              ssim(gray_hr_frame, gray_est_frame, full=True)[0]))
-
-            t += 1
-
+            # Show video
             text_window = 'FPS:%d' % fps
 
             window_title = 'Original / Frame-Recurrent Video Super Resolution / Bicubic / Nearest'
@@ -571,141 +538,15 @@ class FrameRecurrentVideoSR(object):
             img_window = normalize(img_window)
             cv2.imshow(window_title, img_window)
 
-            # img_window = denormalize(img_window)
-            # video_out.write(img_window)
-
             key = cv2.waitKey(1)
             if key == ord('p'):
                 while True:
-                    # cv2.imshow('Low Resolution Frame', lr_frame[0])
                     cv2.imshow(window_title, img_window)
                     if cv2.waitKey(1) == ord('p'):
                         break
             elif key == ord('q'):
                 break
-
+            t += 1
         cap.release()
         cv2.destroyAllWindows()
-        print('\n[INFO] Video stopped.')
-
-    def run_image(self):
-        print('[INFO] Loading pretrained model...')
-
-        if self.configs['run']['pretrained_model']:
-            self.frvsr.load_weights(self.configs['run']['pretrained_model'])
-
-        print('[INFO] Model ready.')
-        print('[INFO] Running model...')
-
-        rows = self.configs['data']['rows']
-        cols = self.configs['data']['cols']
-
-        prev_lr_frame = np.array([np.zeros((self.lr_shape[0] * rows, self.lr_shape[1] * cols, self.lr_shape[2]))])
-        prev_est_frame = np.array([np.zeros((self.hr_shape[0] * rows, self.hr_shape[1] * cols, self.hr_shape[2]))])
-
-        est_frame = np.array([np.zeros((self.hr_shape[0] * rows, self.hr_shape[1] * cols, self.hr_shape[2]))])
-
-        sub_prev_lr_frames = np.repeat(np.array([np.zeros(self.lr_shape)]), rows * cols, axis=0)
-        sub_est_frames = np.repeat(np.array([np.zeros(self.hr_shape)]), rows * cols, axis=0)
-
-        t1 = datetime.datetime.now()
-
-        image = cv2.imread('/home/javier/PugPlus/Imágenes/blacksmith_small.png')
-
-        img_windows = []
-        img_window = np.array([])
-
-        cv2.imshow('Low image', image)
-        cv2.waitKey(0)
-
-        frame = normalize(image)
-        for t in range(10):
-            hr_frame = cv2.resize(frame,
-                                    (self.configs['data']['high_res'] * rows, self.configs['data']['high_res'] * cols),
-                                    interpolation=cv2.INTER_CUBIC)
-
-            lr_frame = np.array([cv2.resize(cv2.GaussianBlur(hr_frame, (5, 5), 0),
-                                            (self.configs['data']['low_res'] * rows,
-                                                self.configs['data']['low_res'] * cols),
-                                interpolation=cv2.INTER_CUBIC)])
-
-            sub_hr_frames = np.array([])
-            sub_lr_frames = np.array([])
-            for i in range(rows):
-                for j in range(cols):
-                    sub_lr_frame = lr_frame[0, i * self.configs['data']['low_res']: (i+1) * self.configs['data']['low_res'],
-                                            j * self.configs['data']['low_res']: (j+1) * self.configs['data']['low_res']]
-
-                    try:
-                        sub_lr_frames = np.append(sub_lr_frames, [sub_lr_frame], axis=0)
-
-                    except ValueError:
-                        sub_lr_frames = np.array([sub_lr_frame])
-
-            inference_time_1 = datetime.datetime.now()
-            sub_est_frames, _ = self.frvsr.predict([sub_lr_frames,
-                                                    sub_prev_lr_frames,
-                                                    sub_est_frames])
-            inference_time_2 = datetime.datetime.now()
-
-            for i in range(rows):
-                for j in range(cols):
-                    est_frame[:, i * self.configs['data']['high_res']: (i+1) * self.configs['data']['high_res'], j * self.configs['data']['high_res']: (j+1) * self.configs['data']['high_res']] = sub_est_frames[i*cols + j]
-
-            bicubic_frame = cv2.resize(lr_frame[0], (self.configs['data']['high_res'] * rows, self.configs['data']['high_res'] * cols),
-                                        interpolation=cv2.INTER_CUBIC)
-
-            sub_prev_lr_frames = sub_lr_frames
-
-            nearest_frame = cv2.resize(lr_frame[0], (self.configs['data']['high_res'] * rows, self.configs['data']['high_res'] * cols),
-                                        interpolation=cv2.INTER_NEAREST)
-
-            border = 256 - 64
-
-            lr_scale = cv2.copyMakeBorder(lr_frame[0], border, border, border, border, cv2.BORDER_CONSTANT)
-
-            img_windows.append(lr_scale)
-            img_windows.append(est_frame[0])
-            img_windows.append(bicubic_frame)
-            img_windows.append(hr_frame)
-
-            window_rows = 2
-            window_cols = 2
-
-            img_window = np.zeros((window_rows * self.hr_shape[0] * rows,
-                                    window_cols * self.hr_shape[1] * cols,
-                                    self.hr_shape[2]))
-
-            # for img in img_windows:
-            #     try:
-            #         img_window = np.concatenate((img_window, img), axis=0)
-            #     except ValueError:
-            #         img_window = np.array(img)
-
-            for i in range(window_rows):
-                for j in range(window_cols):
-                    img_window[self.hr_shape[0] * rows * i:self.hr_shape[0] * rows * (i+1), self.hr_shape[1]  * cols * j:self.hr_shape[1] * cols * (j+1)] = img_windows[i*window_cols + j]
-
-            t2 = datetime.datetime.now()
-            delta_t = t2 - t1
-            t1 = datetime.datetime.now()
-
-            fps = int(1 / delta_t.total_seconds())
-            delta_inference = inference_time_2 - inference_time_1
-            inference_time = delta_inference.total_seconds() * 1000
-
-            gray_hr_frame = cv2.cvtColor(hr_frame, cv2.COLOR_BGR2GRAY)
-            gray_nearest_frame = cv2.cvtColor(nearest_frame, cv2.COLOR_BGR2GRAY)
-            gray_bicubic_frame = cv2.cvtColor(bicubic_frame, cv2.COLOR_BGR2GRAY)
-            gray_est_frame = cv2.cvtColor(est_frame[0].astype('Float32'), cv2.COLOR_BGR2GRAY)
-
-            text_window = 'FPS:%d' % fps
-
-            window_title = 'Original / Frame-Recurrent Video Super Resolution / Bicubic / Nearest'
-            cv2.putText(img_window, text_window, (0, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 1, 0), 1, cv2.LINE_4)
-
-            cv2.imshow(window_title, img_window)
-            cv2.waitKey(500)
-        cv2.destroyAllWindows()
-        cv2.imwrite('blacksmith_big.png', denormalize(est_frame[0]))
         print('\n[INFO] Video stopped.')

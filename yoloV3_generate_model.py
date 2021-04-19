@@ -1,7 +1,9 @@
-# https://machinelearningmastery.com/how-to-perform-object-detection-with-yolov3-in-keras/
+'''
+https://machinelearningmastery.com/how-to-perform-object-detection-with-yolov3-in-keras/
 
-# create a YOLOv3 Keras model and save it to file
-# based on https://github.com/experiencor/keras-yolo3
+Create a YOLOv3 Keras model and save it to file
+based on https://github.com/experiencor/keras-yolo3
+'''
 import struct
 import numpy as np
 from keras.layers import Conv2D
@@ -107,7 +109,7 @@ def make_yolov3_model():
 							   {'filter': 255, 'kernel': 1, 'stride': 1, 'bnorm': False, 'leaky': False, 'layer_idx': 105}], skip=False)
 	model = Model(input_image, [yolo_82, yolo_94, yolo_106])
 	return model
- 
+  
 class WeightReader:
 	def __init__(self, weight_file):
 		with open(weight_file, 'rb') as w_f:

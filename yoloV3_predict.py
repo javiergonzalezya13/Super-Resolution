@@ -1,5 +1,7 @@
-# load yolov3 model and perform object detection
-# based on https://github.com/experiencor/keras-yolo3
+'''
+Load yolov3 model and perform object detection
+based on https://github.com/experiencor/keras-yolo3
+'''
 import os
 
 import cv2
@@ -199,7 +201,6 @@ class YoloV3(object):
 
     def predict(self):
         # load and prepare image
-        # image, image_w, image_h = load_image_pixels(video_filename, (self.input_w, self.input_h))
         f = open(os.path.join(self.configs['rec']['video'], 'labels.txt'), 'w+')
         video_out_file = os.path.join(self.configs['rec']['video'], 'video_recognition.avi')
         video = os.path.join(self.configs['rec']['video'], 'video.avi')
@@ -208,10 +209,9 @@ class YoloV3(object):
         n_frame = 0
         view_detection = False
         video_out = cv2.VideoWriter(video_out_file,
-                            cv2.VideoWriter_fourcc(*'DIVX'),
-                            10,
-                            (self.input_h,
-                             self.input_w))
+                                    cv2.VideoWriter_fourcc(*'DIVX'),
+                                    10,
+                                    (self.input_h, self.input_w))
         print('[INFO] Starting object recognition process...')
         while cap.isOpened:
             ret, frame = cap.read()
@@ -239,7 +239,6 @@ class YoloV3(object):
                     f.write('%d\t' % (n_frame))
                     for i in range(len(v_boxes)):
                         f.write('%s\t%f\t' % (v_labels[i], v_scores[i]))
-                        # print(v_labels[i], v_scores[i])
                     f.write('\n')
             n_frame += 1
             # draw what we found
@@ -252,3 +251,28 @@ class YoloV3(object):
         print('\r[INFO] Frames processed: %d/%d' % (total_frames, total_frames))
         print('\n[INFO] Object recognition ready.')
         f.close()
+
+    def predict_image(self, image, image_out, labels_file):
+        # load and prepare image
+        frame = normalize(image)
+        frame = expand_dims(frame, 0)
+        yhat = self.model.predict(frame)
+        boxes = list()
+        for i in range(len(yhat)):
+            # decode the output of the network
+            boxes += decode_netout(yhat[i][0], self.anchors[i], self.class_threshold, self.input_h, self.input_w)
+        # correct the sizes of the bounding boxes for the shape of the image
+        correct_yolo_boxes(boxes, self.input_h, self.input_w, self.input_h, self.input_w)
+        # suppress non-maximal boxes
+        do_nms(boxes, 0.5)
+        # get the details of the detected objects
+        v_boxes, v_labels, v_scores = get_boxes(boxes, self.labels, self.class_threshold)
+        # summarize what we found
+        if v_labels:
+            for i in range(len(v_boxes)):
+                labels_file.write('\t%s\t%f' % (v_labels[i], v_scores[i]))
+        labels_file.write('\n')
+        # draw what we found
+        frame = denormalize(frame[0])
+        image = draw_boxes(frame, v_boxes, v_labels, v_scores)
+        cv2.imwrite(image_out, image)

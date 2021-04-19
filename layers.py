@@ -1,3 +1,7 @@
+'''
+Implementation of neural networks internal layers
+'''
+
 import keras.backend as K
 import tensorflow as tf
 from keras.layers import (Add, AveragePooling2D, BatchNormalization,
@@ -7,8 +11,7 @@ from keras.layers import (Add, AveragePooling2D, BatchNormalization,
 from keras.layers.core import Activation
 from keras.models import Model
 
-# --------------------------------FRVSR and TecoGAN layers--------------------------------
-
+# FRVSR and TecoGAN internal layers 
 class FNet(object):
     def __init__(self, LR_shape):
         self.LR_shape = LR_shape
@@ -182,7 +185,7 @@ class Discriminator(object):
         model.name = 'Discriminator'
         return model
 
-# ------------------------------------EDVR layers--------------------------------
+# EDVR internal layers 
 class PreDeblur(object):
     def __init__(self, lr_shape):
         self.lr_shape = lr_shape
@@ -401,13 +404,13 @@ class Reconstruction(object):
                 return tf.depth_to_space(x, scale)
 
             return Lambda(subpixel, output_shape=subpixel_shape, name='subpixel_' + str(idx))
-        
+
         def Residual_Block(input_layer):
             x = Conv2D(filters=64, kernel_size=3, padding='same', activation='relu')(input_layer)
             x = Conv2D(filters=64, kernel_size=3, padding='same')(x)
             output_layer = Add()([input_layer, x])
             return output_layer
-        
+
         input_layer = Input(shape=(self.lr_shape[0], self.lr_shape[1], 64))
 
         mid_layer = input_layer
