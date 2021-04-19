@@ -40,7 +40,6 @@ stage:
 	train: true
 	eval: true
 	run: true
-	rec: false
 
 data:
 	low_res: 64
