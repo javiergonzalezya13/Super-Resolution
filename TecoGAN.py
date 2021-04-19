@@ -184,17 +184,13 @@ class TecoGAN(object):
             pretrain_gen = False
             print('[INFO] Discriminator ready.')
 
-        if 'pretrained_model' in self.configs['train']:
+        if 'pretrained_model' in self.configs['cnn']:
             print('[INFO] Loading pretrained generator...')
-            pretrained_gen_file = os.path.join(self.configs['root_dir'], self.configs['train']['pretrained_model'])
+            pretrained_gen_file = os.path.join(self.configs['root_dir'], self.configs['cnn']['pretrained_model'])
             self.generator.load_weights(pretrained_gen_file)
-            name = os.path.splitext(self.configs['train']['pretrained_model'])[0]
+            name = os.path.splitext(self.configs['cnn']['pretrained_model'])[0]
             i_init = int(name.split('_')[-1])
-            if (pretrain_gen) and (i_init == self.configs['train']['gen_iterations']):
-                pretrain_gen = False
-                i = 0
-            else:
-                i = i_init
+            i = i_init
             print('[INFO] Generator ready.')
 
 
@@ -237,7 +233,7 @@ class TecoGAN(object):
                     prev_est_batch = np.array([np.zeros(self.hr_shape)])
 
                 # Frame zero of the second and onward sequences
-                elif b % self.configs['data']['c_frames'] == 0:
+                elif b % self.configs['train']['c_frames'] == 0:
                     lr_batch = np.append(lr_batch, [single_lr], axis=0)
                     prev_lr_batch = np.append(prev_lr_batch, [np.zeros(self.lr_shape)], axis=0)
                     prev_est_batch = np.append(prev_est_batch, [np.zeros(self.hr_shape)], axis=0)
@@ -316,8 +312,8 @@ class TecoGAN(object):
 
         lr_zeros = np.zeros(self.lr_shape)
         hr_zeros = np.zeros(self.hr_shape)
-        D_ones = np.ones((self.configs['train']['batch_size'] * (self.configs['data']['c_frames'] - 2)) * 2)
-        D_zeros = np.zeros((self.configs['train']['batch_size'] * (self.configs['data']['c_frames'] - 2)) * 2)
+        D_ones = np.ones((self.configs['train']['batch_size'] * (self.configs['train']['c_frames'] - 2)) * 2)
+        D_zeros = np.zeros((self.configs['train']['batch_size'] * (self.configs['train']['c_frames'] - 2)) * 2)
 
         print('[INFO] Starting TecoGAN training process...')
 
@@ -364,7 +360,7 @@ class TecoGAN(object):
                     prev_hat_hr_batch = np.array([hr_frame[0]])
 
                 # First frame of the second and onward sequences
-                elif b % self.configs['data']['c_frames'] == 0:
+                elif b % self.configs['train']['c_frames'] == 0:
                     lr_batch = np.append(lr_batch, [single_lr], axis=0)
                     prev_lr_batch = np.append(prev_lr_batch, [lr_zeros], axis=0)
                     prev_est_batch = np.append(prev_est_batch, [hr_zeros], axis=0)
@@ -420,7 +416,7 @@ class TecoGAN(object):
                     next_hat_hr_batch = np.array([hr_frame[0]])
 
                 # Last frame of the sequence
-                elif (b + 1) % self.configs['data']['c_frames'] == 0:
+                elif (b + 1) % self.configs['train']['c_frames'] == 0:
                     next_bic_batch = np.append(next_bic_batch, [np.zeros(self.hr_shape)], axis=0)
                     next_est_batch = np.append(next_est_batch, [np.zeros(self.hr_shape)], axis=0)
                     next_hr_batch = np.append(next_hr_batch, [np.zeros(self.hr_shape)], axis=0)
@@ -444,7 +440,7 @@ class TecoGAN(object):
 
             # Remove useless images from batch
             for b in range(hr_batch.shape[0]-1, -1, -1):
-                if (b % self.configs['data']['c_frames'] == 0) or ((b+1) % self.configs['data']['c_frames'] == 0):
+                if (b % self.configs['train']['c_frames'] == 0) or ((b+1) % self.configs['train']['c_frames'] == 0):
                     prev_hr_batch = np.delete(prev_hr_batch, b, axis=0)
                     hr_batch = np.delete(hr_batch, b, axis=0)
                     next_hr_batch = np.delete(next_hr_batch, b, axis=0)
@@ -548,7 +544,7 @@ class TecoGAN(object):
                 self.discriminator.save_weights(disc_weights)
                 print('[INFO] Model saved.')
                 yaml_file = os.path.join(self.output_dir, 'TecoGAN.yaml')
-                self.configs['train']['pretrained_model'] = gen_weights
+                self.configs['cnn']['pretrained_model'] = gen_weights
                 self.configs['train']['pretrained_disc'] = disc_weights
                 with open(yaml_file, 'w') as file:
                     yaml.dump(self.configs, file, default_flow_style=False)
@@ -561,8 +557,8 @@ class TecoGAN(object):
         # Load pretrained generator
         print('[INFO] Loading pretrained model...')
 
-        if self.configs['eval']['pretrained_model']:
-            self.generator.load_weights(self.configs['eval']['pretrained_model'])
+        if self.configs['cnn']['pretrained_model']:
+            self.generator.load_weights(self.configs['cnn']['pretrained_model'])
 
         # Initialize variables and directories
         print('[INFO] Model ready.')
@@ -734,8 +730,8 @@ class TecoGAN(object):
         # Load pretrained generator
         print('[INFO] Loading pretrained model...')
 
-        if self.configs['run']['pretrained_model']:
-            self.generator.load_weights(self.configs['run']['pretrained_model'])
+        if self.configs['cnn']['pretrained_model']:
+            self.generator.load_weights(self.configs['cnn']['pretrained_model'])
 
         # Initialize variables
         print('[INFO] Model ready.')
