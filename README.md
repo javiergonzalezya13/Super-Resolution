@@ -83,7 +83,7 @@ La baja y alta resolución para las redes neuronales, tanto en el alto como el a
 
 Ya sea en el entrenamiento o evaluación, `videos` corresponde al directorio o directorios que contienen los archivos de video a utilizar. En caso de que ambos procesos se lleven a cabo en la misma ejecución, el resultado de la evaluación correspondería a las métricas calculadas para los datos de entrenamiento.
 
-En el caso de la evaluación y ejecución simple, el producto entre `rows` y `cols` determina la cantidad de sub imágenes a procesar, en donde estás sub imágenes son el resultado de dividir la imagen original de interés en cuadrantes. Esto permite que la red neuronal sea capaz de procesar imágenes de mayor tamaño, sin tener que modificar la configuración de la imagen de entrada y salida. 
+En el caso de la evaluación y ejecución simple, el producto entre `rows` y `cols` determina la cantidad de sub imágenes a procesar, en donde estás sub imágenes son el resultado de dividir en cuadrantes la imagen original de interés. Esto permite que la red neuronal sea capaz de procesar imágenes de mayor tamaño, sin tener que modificar la configuración de la imagen de entrada y salida. 
 
 | Parámetro | Descripción                    |
 | ------------- | ------------------------------ |
