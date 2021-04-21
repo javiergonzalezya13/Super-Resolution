@@ -1,0 +1,34 @@
+root_dir: ./
+
+stage:
+  train: false
+  eval: false
+  run: false
+
+data:
+  low_res: 64
+  high_res: 256
+  channels: 3
+  upscale: 4
+  videos: 
+  rows:
+  cols:
+
+cnn:
+  model: frvsr
+  pretrained_model: FRVSR_example.h5
+
+train:
+  iterations: 2000000
+  batch_size: 4
+  c_frames: 10
+  sample_freq: 250
+  checkpoint_freq: 1000
+  info_freq: 100
+
+eval:
+  watch: True
+  output_dir: ./cars_ariplanes_metrics/
+
+run:
+  video: volvo_car.mp4
