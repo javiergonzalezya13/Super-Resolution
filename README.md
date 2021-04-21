@@ -71,9 +71,13 @@ run:
 	video: volvo_car.mp4
 ```
 
-Al ejecutar el programa, `root_dir` indica el directorio a partir de la cual se buscan los datos a procesar, modelos pre-entrenados y se crean directorios para almacenar los datos de salida. 
+Al ejecutar el programa, `root_dir` indica el directorio a partir de la cual se buscan los datos a procesar, modelos pre-entrenados y se crean directorios para almacenar los datos de salida.
 
-La red neuronal a utilizar está dada por `model`, en donde sus posibles valores `frvsr` y `tecogan`, indican si se debe hacer uso de la red FRVSR o TecoGAN respectivamente. Ya sea para el entrenamiento, evaluación o ejecución simple, `pretrained_model` corresponde al archivo que contiene el valor de los pesos a cargar en la red neuronal.
+`stage` contiene la habilitación de las tres etapas mencionadas previamente. En el ejemplo se puede ver que cada etapa tiene asociada ciertos parámetros, los cuales solo  se utilizan en caso de estar activada la etapa correspondiente.
+
+Dentro `cnn` se encuentran los parámetros que determinan qué red neuronal se utiliza y, en caso de haber, el modelo pre-entrenado. La red neuronal a utilizar está dada por `model`, en donde sus posibles valores `frvsr` y `tecogan`, indican si se debe hacer uso de la red FRVSR o TecoGAN respectivamente. Ya sea para el entrenamiento, evaluación o ejecución simple, `pretrained_model` corresponde al archivo que contiene el valor de los pesos a cargar en la red neuronal.
+
+`data` está compuesto por varios parámetros que determinan configuraciones tales como las dimensiones de las imágenes, conjuntos de datos, u otros.
 
 La baja y alta resolución para las redes neuronales, tanto en el alto como el ancho de los píxeles, está dada por `low_res` y `high_res` respectivamente, mientras que el número de canales en ambos casos se indica por medio de `channels`. Se advierte que si la proporción entre `low_res` y `high_res` no es igual a `upscale`, el programa indica un error con respecto a esto y termina inmediatamente.
 
