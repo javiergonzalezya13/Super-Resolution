@@ -13,7 +13,11 @@ Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Reso
 
 Para evitar problemas de compatibilidad de las bibliotecas utilizadas se debe tener el archivo `Pipfile` y utilizar `pipenv`, el entorno virtual para Python.
 
-`$ pip install pipenv`
+`$ sudo apt update`
+
+`$ sudo apt install python3-pip`
+
+`$ pip3 install pipenv`
 
 `$ pipenv install -r requirements.txt`
 
