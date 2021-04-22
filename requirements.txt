@@ -1,1 +1,10 @@
-
+keras==2.2.4
+opencv-python ==*
+sklearn==*
+tensorflow-gpu==1.13.1
+pydot==*
+scikit-image==*
+numpy====1.16.2
+graphviz==*
+dot==*
+pygraphviz==*
