@@ -1,10 +1,10 @@
 keras==2.2.4
-opencv-python ==*
-sklearn==*
+opencv-python
+sklearn
 tensorflow-gpu==1.13.1
-pydot==*
-scikit-image==*
+pydot==1.4.1
+scikit-image
 numpy====1.16.2
-graphviz==*
-dot==*
-pygraphviz==*
+graphviz
+dot
+pygraphviz
