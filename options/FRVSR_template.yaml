@@ -5,6 +5,8 @@ stage:
   eval: false
   run: false
 
+gpu: true
+
 data:
   low_res: 64
   high_res: 256
@@ -27,7 +29,7 @@ train:
   info_freq: 100
 
 eval:
-  watch: True
+  watch: true
   output_dir: ./cars_ariplanes_metrics/
 
 run:
