@@ -105,15 +105,15 @@ run:
 
 Al ejecutar el programa, `root_dir` indica el directorio a partir de la cual se buscan los datos a procesar, modelos pre-entrenados y se crean directorios para almacenar los datos de salida.
 
-`stage` contiene la habilitación de las tres etapas mencionadas previamente. En el ejemplo se puede ver que cada etapa tiene asociada ciertos parámetros, los cuales solo  se utilizan en caso de estar activada la etapa correspondiente.
+`stage` contiene la habilitación de las tres etapas mencionadas previamente. En el ejemplo se puede ver que cada etapa tiene asociada ciertos parámetros, los cuales solo se utilizan en caso de estar activada la etapa correspondiente y no es necesario definir en caso de que la correspondiente etapa no se lleve a cabo.
 
-El parámetro `gpu` indica si se hará uso de una Graphic Processing Unit (GPU) para hacer uso de la red neuronal. En caso de que se indique que no se hará uso de esta, por defecto se utilizará la Central processing Unit (CPU).
+El parámetro `gpu` indica si la red neuronal se ejecutará mediante una Graphic Processing Unit (GPU). En caso de que se indique que no se hará uso la GPU, o no hubiera una disponible, por defecto se utiliza la Central processing Unit (CPU).
 
-Dentro `cnn` se encuentran los parámetros que determinan qué red neuronal se utiliza y, en caso de haber, el modelo pre-entrenado. La red neuronal a utilizar está dada por `model`, en donde sus posibles valores `frvsr` y `tecogan`, indican si se debe hacer uso de la red FRVSR o TecoGAN respectivamente. Ya sea para el entrenamiento, evaluación o ejecución simple, `pretrained_model` corresponde al archivo que contiene el valor de los pesos a cargar en la red neuronal.
+Dentro de `cnn` se encuentran los parámetros que determinan qué red neuronal se utiliza y, en caso de haber, el modelo pre-entrenado. La red neuronal a utilizar está dada por `model`, en donde sus posibles valores `frvsr` y `tecogan`, indican si se debe hacer uso de la red FRVSR o TecoGAN respectivamente. Ya sea para el entrenamiento, evaluación o ejecución simple, `pretrained_model` corresponde al archivo que contiene el valor de los pesos a cargar en la red neuronal.
 
 `data` está compuesto por varios parámetros que determinan configuraciones tales como las dimensiones de las imágenes, conjuntos de datos, u otros.
 
-La baja y alta resolución para las redes neuronales, tanto en el alto como el ancho de los píxeles, está dada por `low_res` y `high_res` respectivamente, mientras que el número de canales en ambos casos se indica por medio de `channels`. Se advierte que si la proporción entre `low_res` y `high_res` no es igual a `upscale`, el programa indica un error con respecto a esto y termina inmediatamente.
+La baja y alta resolución de las imágenes para las redes neuronales, tanto en el alto como el ancho de los píxeles, está dada por `low_res` y `high_res` respectivamente, mientras que el número de canales en ambos casos se indica por medio de `channels`. Se advierte que si la proporción entre `low_res` y `high_res` no es igual a `upscale`, el programa indica un error con respecto a esto y termina inmediatamente.
 
 Ya sea en el entrenamiento o evaluación, `videos` corresponde al directorio o directorios que contienen los archivos de video a utilizar y separados por una coma, tal como se muestra en el ejemplo anterior. En caso de que ambos procesos se lleven a cabo en la misma ejecución, el resultado de la evaluación correspondería a las métricas calculadas para los datos utilizados durante el entrenamiento.
 
