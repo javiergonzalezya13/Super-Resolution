@@ -1,3 +1,4 @@
+
 '''
 Frame-Recurrent Video Super-Resolution
 '''
@@ -25,27 +26,27 @@ class FrameRecurrentVideoSR(object):
     # Building FRVSR architecture process
     def build(self):
         # Build FRVSR blocks
-        print('[INFO] Creating FNet...')
+        print('[INFO] Creating FNet ...')
         self.fnet = FNet(self.lr_shape).build()
         print('[INFO] FNet ready.')
 
-        print('[INFO] Creating SRNet...')
+        print('[INFO] Creating SRNet ...')
         self.srnet = SRNet(self.lr_shape).build()
         print('[INFO] SRNet ready.')
 
-        print('[INFO] Creating Upscaling...')
+        print('[INFO] Creating Upscaling ...')
         self.upscaling = Upscaling(self.lr_shape).build()
         print('[INFO] Upscaling ready.')
 
-        print('[INFO] Creating High Resolution Warp...')
+        print('[INFO] Creating High Resolution Warp ...')
         self.hr_warp = Warp(self.hr_shape, 1).build()
         print('[INFO] High Resolution Warp ready.')
 
-        print('[INFO] Creating Low Resolution Warp...')
+        print('[INFO] Creating Low Resolution Warp ...')
         self.lr_warp = Warp(self.lr_shape, 2).build()
         print('[INFO] Low Resolution Warp ready.')
 
-        print('[INFO] Creating Space to Depth...')
+        print('[INFO] Creating Space to Depth ...')
         self.space2depth = Space2Depth(self.hr_shape).build()
         print('[INFO] Space to Depth ready.')
         
@@ -66,7 +67,7 @@ class FrameRecurrentVideoSR(object):
                        show_shapes=True, show_layer_names=True)
 
         # Assemble FRVSR
-        print('[INFO] Creating Frame-Recurrent Video Super Resolution...')
+        print('[INFO] Creating Frame-Recurrent Video Super Resolution ...')
         I_LR_t = Input(shape=self.lr_shape, name='I_LR_t')
         I_LR_t_1 = Input(shape=self.lr_shape, name='I_LR_t_1')
         I_est_t_1 = Input(shape=self.hr_shape, name='I_est_t_1')
@@ -103,7 +104,7 @@ class FrameRecurrentVideoSR(object):
 
         # Load pretrained FRVSR and set current iteration
         if 'pretrained_model' in self.configs['train']:
-            print('[INFO] Loading pretrained model...')
+            print('[INFO] Loading pretrained model ...')
             self.frvsr.load_weights(self.configs['cnn']['pretrained_model'])
             name = os.path.splitext(self.configs['cnn']['pretrained_model'])[0]
             i = int(name.split('_')[-1])
@@ -218,7 +219,7 @@ class FrameRecurrentVideoSR(object):
     # Evaluation process
     def eval(self):
         # Load pretrained model
-        print('[INFO] Loading pretrained model...')
+        print('[INFO] Loading pretrained model ...')
 
         if self.configs['eval']['pretrained_model']:
             self.configs['eval']['pretrained_model'] = os.path.join(self.configs['root_dir'],
@@ -227,7 +228,7 @@ class FrameRecurrentVideoSR(object):
 
         # Initialize variables and directories
         print('[INFO] Model ready.')
-        print('[INFO] Evaluating model...')
+        print('[INFO] Evaluating model ...')
         os.makedirs(self.configs['eval']['output_dir'], exist_ok=True)
         f = open(os.path.join(self.configs['eval']['output_dir'], 'metrics.txt'), 'w+')
 
@@ -237,9 +238,7 @@ class FrameRecurrentVideoSR(object):
         window_rows = 2
         window_cols = 2
 
-        est_frame = np.array([np.zeros((self.hr_shape[0]*rows,
-                                        self.hr_shape[1]*cols,
-                                        self.hr_shape[2]))])
+        est_frame = np.array([np.zeros((self.hr_shape[0]*rows, self.hr_shape[1]*cols, self.hr_shape[2]))])
 
         sub_prev_lr_frames = np.repeat(np.array([np.zeros(self.lr_shape)]), rows*cols, axis=0)
         sub_est_frames = np.repeat(np.array([np.zeros(self.hr_shape)]), rows*cols, axis=0)
@@ -253,16 +252,19 @@ class FrameRecurrentVideoSR(object):
         total_bic_ssim = 0
 
         os.makedirs(self.configs['eval']['output_dir'], exist_ok=True)
-        video_file = os.path.join(self.configs['eval']['output_dir'], self.configs['eval']['output_file'])
-        video_out = cv2.VideoWriter(video_file,
-                                    cv2.VideoWriter_fourcc(*'DIVX'),
-                                    10,
-                                    (self.hr_shape[0]*rows,
-                                     self.hr_shape[1]*cols))
+
         # Process videos
         videos = get_videos(configs)
         for video in videos:
             cap = cv2.VideoCapture(video)
+            video_basename = os.path.basename(video)
+            video_file = os.path.join(self.configs['eval']['output_dir'], video_basename)
+            video_out = cv2.VideoWriter(video_file,
+                                        cv2.VideoWriter_fourcc(*'DIVX'),
+                                        10,
+                                        (self.hr_shape[0]*rows,
+                                         self.hr_shape[1]*cols))
+            t_video = 0
             while cap.isOpened:
                 img_windows = []
                 img_window = np.array([])
@@ -289,7 +291,6 @@ class FrameRecurrentVideoSR(object):
                     for j in range(cols):
                         sub_lr_frame = lr_frame[0, i*self.lr_shape[0]:(i+1)*self.lr_shape[0],
                                                 j*self.lr_shape[1]:(j+1)*self.lr_shape[1]]
-
                         try:
                             sub_lr_frames = np.append(sub_lr_frames, [sub_lr_frame], axis=0)
 
@@ -316,7 +317,7 @@ class FrameRecurrentVideoSR(object):
 
                 sub_prev_lr_frames = sub_lr_frames
                 
-                border = 256 - 64
+                border = (self.hr_shape[0] - self.lr_shape[0]) * rows // 2
 
                 lr_scale = cv2.copyMakeBorder(lr_frame[0], border, border, border, border, cv2.BORDER_CONSTANT)
 
@@ -356,6 +357,7 @@ class FrameRecurrentVideoSR(object):
                     print('[INFO] Nearest SSIM: %f \t Bicubic SSIM: %f \t FRVSR SSIM: %f' % (nearest_ssim, bic_ssim, est_ssim))
                     f.write('Frame:\t%d\tInference time:\t%d\tPSNR:\t%f\tSSIM:\t%f\n' % (t, inference_time, est_psnr, est_ssim))
                 t += 1
+                t_video += 1
 
                 # Show and write video
                 if configs['eval']['watch']:
@@ -374,9 +376,13 @@ class FrameRecurrentVideoSR(object):
                             if cv2.waitKey(1) == ord('p'):
                                 break
                     elif key == ord('q'):
+                        print('[INFO] Evaluation stopped.')
                         break
 
                 video_out.write(img_window_2)
+
+            video_out.release()
+            f.write('\n')
 
         # Show average metrics        
         total_psnr = total_psnr / (t // 10)
@@ -387,22 +393,25 @@ class FrameRecurrentVideoSR(object):
         
         print('\n[INFO] Avg. Bicubic PSNR: %f\tAvg. FRVSR PSNR: %f' % (total_bic_psnr, total_psnr))
         print('[INFO] Avg. Bicubic SSIM: %f\tAvg. FRVSR SSIM: %f' % (total_bic_ssim, total_ssim))
+        f.write('Total PSNR:\t%f\tTotal SSIM:\t%f' % (total_psnr, total_ssim))
+        f.write('Total bicubuc PSNR:\t%f\tTotal bicubic SSIM:\t%f' % (total_bic_psnr, total_bic_ssim))
 
         f.close()
+
         cv2.destroyAllWindows()
         print('\n[INFO] Video stopped.')
 
     # Run FRVSR on single video or camera
     def run(self):
         # Load pretrained model
-        print('[INFO] Loading pretrained model...')
+        print('[INFO] Loading pretrained model ...')
 
         if self.configs['cnn']['pretrained_model']:
             self.frvsr.load_weights(self.configs['cnn']['pretrained_model'])
 
         # Initialize variables
         print('[INFO] Model ready.')
-        print('[INFO] Running model...')
+        print('[INFO] Running model ...')
 
         rows = self.configs['data']['rows']
         cols = self.configs['data']['cols']
@@ -484,11 +493,9 @@ class FrameRecurrentVideoSR(object):
             
             sub_prev_lr_frames = sub_lr_frames
             
-            border = (self.hr_shape[0]*rows - self.lr_shape[0]*rows) // 2
+            border = (self.hr_shape[0] - self.lr_shape[0]) * rows // 2
 
             lr_scale = cv2.copyMakeBorder(lr_frame[0], border, border, border, border, cv2.BORDER_CONSTANT)
-
-            print(lr_scale.shape)
 
             img_windows.append(lr_scale)
             img_windows.append(denormalize(est_frame[0]))

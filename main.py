@@ -7,6 +7,7 @@ import os
 import sys
 
 import keras.backend as K
+import tensorflow as tf
 import yaml
 
 # from EDVR import EDVR
@@ -44,6 +45,14 @@ if __name__ == '__main__':
         print('[ERROR] Incompatible resolutions with upscale x%d.' % (UPSCALE))
         sys.exit(0)
 
+    # Activate GPU or CPU mode
+    if configs['gpu'] and K.tensorflow_backend._get_available_gpus():
+        mode = '/gpu:0'
+    else:
+        if configs['gpu']:
+            print('[INFO] No GPU available. Running on CPU ...')
+        mode = '/cpu:0'
+
     # Create directory
     NOW = datetime.datetime.now()
     OUTPUT_DIR = '%d-%d-%d %d:%d:%d' % (NOW.year, NOW.month, NOW.day,
@@ -51,32 +60,36 @@ if __name__ == '__main__':
 
     OUTPUT_DIR = os.path.join(configs['root_dir'], 'MODEL', OUTPUT_DIR)
 
+    with tf.device(mode):
+        # Check neuronal network to use
+        if configs['stage']['train'] or configs['stage']['eval'] or configs['stage']['run']:
+            if configs['cnn']['model'] == 'frvsr':
+                MODEL = FrameRecurrentVideoSR(LR_SHAPE, HR_SHAPE, OUTPUT_DIR, configs)
+            elif configs['cnn']['model'] == 'tecogan':
+                MODEL = TecoGAN(LR_SHAPE, HR_SHAPE, OUTPUT_DIR, configs)
+            # elif configs['cnn']['model'] == 'edvr':
+            #     MODEL = EDVR(LR_SHAPE, HR_SHAPE, OUTPUT_DIR, configs)
+            # elif configs['cnn']['model'] == 'edvr_v2':
+            #     MODEL = EDVR_v2(configs, OUTPUT_DIR, inp_shape=LR_SHAPE, nframes=5)
+            else:
+                print('[ERROR] Not valid model selected.')
+                sys.exit(0)
+            MODEL.build()
 
-    # Check neuronal network to use
-    if configs['stage']['train'] or configs['stage']['eval'] or configs['stage']['run']:
-        if configs['cnn']['model'] == 'frvsr':
-            MODEL = FrameRecurrentVideoSR(LR_SHAPE, HR_SHAPE, OUTPUT_DIR, configs)
-        elif configs['cnn']['model'] == 'tecogan':
-            MODEL = TecoGAN(LR_SHAPE, HR_SHAPE, OUTPUT_DIR, configs)
-        else:
-            print('[ERROR] Not valid model selected.')
-            sys.exit(0)
-        MODEL.build()
+        # Train model
+        if configs['stage']['train']:
+            MODEL.train()
 
-    # Train model
-    if configs['stage']['train']:
-        MODEL.train()
+        # Evaluate model
+        if configs['stage']['eval']:
+            MODEL.eval()
 
-    # Evaluate model
-    if configs['stage']['eval']:
-        MODEL.eval()
+        # Run single video or camera
+        if configs['stage']['run']:
+            MODEL.run()
 
-    # Run single video or camera
-    if configs['stage']['run']:
-        MODEL.run()
-
-    # Recognition with YOLO V3
-    K.clear_session()
-    if configs['stage']['rec']:
-        YOLO_MODEL = YoloV3(configs)
-        YOLO_MODEL.predict()
+        # Recognition with YOLO V3
+        # K.clear_session()
+        # if configs['stage']['rec']:
+        #     YOLO_MODEL = YoloV3(configs)
+        #     YOLO_MODEL.predict()

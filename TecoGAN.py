@@ -27,36 +27,36 @@ class TecoGAN(object):
     # Building TecoGAN architecture process
     def build(self):
         # Build generator blocks
-        print('[INFO] Creating FNet...')
+        print('[INFO] Creating FNet ...')
         self.fnet = FNet(self.lr_shape).build()
         print('[INFO] FNet ready.')
 
-        print('[INFO] Creating SRNet...')
+        print('[INFO] Creating SRNet ...')
         self.srnet = SRNet(self.lr_shape).build()
         print('[INFO] SRNet ready.')
 
-        print('[INFO] Creating Upscaling...')
+        print('[INFO] Creating Upscaling ...')
         self.upscaling = Upscaling(self.lr_shape).build()
         print('[INFO] Upscaling ready.')
 
-        print('[INFO] Creating High Resolution Warp...')
+        print('[INFO] Creating High Resolution Warp ...')
         self.hr_warp = Warp(self.hr_shape, 1).build()
         print('[INFO] High Resolution Warp ready.')
 
-        print('[INFO] Creating Low Resolution Warp...')
+        print('[INFO] Creating Low Resolution Warp ...')
         self.lr_warp = Warp(self.lr_shape, 2).build()
         print('[INFO] Low Resolution Warp ready.')
 
-        print('[INFO] Creating Space to Depth...')
+        print('[INFO] Creating Space to Depth ...')
         self.space2depth = Space2Depth(self.hr_shape).build()
         print('[INFO] Space to Depth ready.')
 
-        print('[INFO] Creating Bicubic Upscaling...')
+        print('[INFO] Creating Bicubic Upscaling ...')
         self.bicubic_upscale = Upscaling(self.lr_shape, 1).build()
         print('[INFO] Bicubic Upscaling ready.')
 
         # Build discriminator
-        print('[INFO] Creating Discriminator...')
+        print('[INFO] Creating Discriminator ...')
         self.discriminator = Discriminator(self.hr_shape).build()
         print('[INFO] Discriminator ready.')
 
@@ -81,7 +81,7 @@ class TecoGAN(object):
                        show_shapes=True, show_layer_names=True)
 
         # Assemble generator
-        print('[INFO] Creating Temporally Coherent GAN...')
+        print('[INFO] Creating Temporally Coherent GAN ...')
         self.I_LR_t = Input(shape=self.lr_shape, name='I_LR_t')
         self.I_LR_t_1 = Input(shape=self.lr_shape, name='I_LR_t_1')
         self.I_est_t_1 = Input(shape=self.hr_shape, name='I_est_t_1')
@@ -178,14 +178,14 @@ class TecoGAN(object):
         pretrain_gen = True
 
         if 'pretrained_disc' in self.configs['train']:
-            print('[INFO] Loading pretrained discriminator...')
+            print('[INFO] Loading pretrained discriminator ...')
             pretrained_disc_file = os.path.join(self.configs['root_dir'], self.configs['train']['pretrained_disc'])
             self.discriminator.load_weights(pretrained_disc_file)
             pretrain_gen = False
             print('[INFO] Discriminator ready.')
 
         if 'pretrained_model' in self.configs['cnn']:
-            print('[INFO] Loading pretrained generator...')
+            print('[INFO] Loading pretrained generator ...')
             pretrained_gen_file = os.path.join(self.configs['root_dir'], self.configs['cnn']['pretrained_model'])
             self.generator.load_weights(pretrained_gen_file)
             name = os.path.splitext(self.configs['cnn']['pretrained_model'])[0]
@@ -194,7 +194,7 @@ class TecoGAN(object):
             print('[INFO] Generator ready.')
 
 
-        print('[INFO] Starting generator training process...')
+        print('[INFO] Starting generator training process ...')
 
         self.configs['train']['iterations'] += 5e4
 
@@ -315,7 +315,7 @@ class TecoGAN(object):
         D_ones = np.ones((self.configs['train']['batch_size'] * (self.configs['train']['c_frames'] - 2)) * 2)
         D_zeros = np.zeros((self.configs['train']['batch_size'] * (self.configs['train']['c_frames'] - 2)) * 2)
 
-        print('[INFO] Starting TecoGAN training process...')
+        print('[INFO] Starting TecoGAN training process ...')
 
         while i <= self.configs['train']['iterations']:
             # Choose batch index
@@ -537,7 +537,7 @@ class TecoGAN(object):
 
             # Save checkpoints
             if i % self.configs['train']['checkpoint_freq'] == 0:
-                print('[INFO] Saving model...')
+                print('[INFO] Saving model ...')
                 gen_weights = os.path.join(self.checkpoints_dir, 'generator_model_weights_%d.h5' % i)
                 disc_weights = os.path.join(self.checkpoints_dir, 'discriminator_model_weights_%d.h5' % i)
                 self.generator.save_weights(gen_weights)
@@ -555,14 +555,14 @@ class TecoGAN(object):
     # Evaluation process
     def eval(self):
         # Load pretrained generator
-        print('[INFO] Loading pretrained model...')
+        print('[INFO] Loading pretrained model ...')
 
         if self.configs['cnn']['pretrained_model']:
             self.generator.load_weights(self.configs['cnn']['pretrained_model'])
 
         # Initialize variables and directories
         print('[INFO] Model ready.')
-        print('[INFO] Evaluating model...')
+        print('[INFO] Evaluating model ...')
         os.makedirs(self.configs['eval']['output_dir'], exist_ok=True)
         f = open(os.path.join(self.configs['eval']['output_dir'], 'metrics.txt'), 'w+')
 
@@ -586,18 +586,19 @@ class TecoGAN(object):
         total_bic_ssim = 0
 
         os.makedirs(self.configs['eval']['output_dir'], exist_ok=True)
-        video_file = os.path.join(self.configs['eval']['output_dir'], 'video.avi')
-        video_out = cv2.VideoWriter(video_file,
-                                    cv2.VideoWriter_fourcc(*'DIVX'),
-                                    10,
-                                    (self.hr_shape[0]*rows,
-                                     self.hr_shape[1]*cols))
 
         # Process videos
-        videos = get_videos(self.onfigs)
+        videos = get_videos(self.configs)
         for video in videos:
             cap = cv2.VideoCapture(video)
-
+            video_basename = os.path.basename(video)
+            video_file = os.path.join(self.configs['eval']['output_dir'], video_basename)
+            video_out = cv2.VideoWriter(video_file,
+                                        cv2.VideoWriter_fourcc(*'DIVX'),
+                                        10,
+                                        (self.hr_shape[0]*rows,
+                                         self.hr_shape[1]*cols))
+            t_video = 0
             while cap.isOpened:
                 img_windows = []
                 img_window = np.array([])
@@ -649,7 +650,7 @@ class TecoGAN(object):
 
                 sub_prev_lr_frames = sub_lr_frames
 
-                border = self.hr_shape[0] - self.lr_shape[0]
+                border = (self.hr_shape[0] - self.lr_shape[0]) * rows // 2
 
                 lr_scale = cv2.copyMakeBorder(lr_frame[0], border, border, border, border, cv2.BORDER_CONSTANT)
 
@@ -687,8 +688,9 @@ class TecoGAN(object):
                     print('\n[INFO] Running at: %d[fps] \t TecoGAN inference time: %d[ms] \t Total inference time: %d[ms]' % (fps, inference_time, delta_t.total_seconds() * 1000))
                     print('[INFO] Nearest PSNR: %f \t Bicubic PSNR: %f \t TecoGAN PSNR: %f' % (nearest_psnr, bic_psnr, est_psnr))
                     print('[INFO] Nearest SSIM: %f \t Bicubic SSIM: %f \t TecoGAN SSIM: %f' % (nearest_ssim, bic_ssim, est_ssim))
-                    f.write('Frame:\t%d\tInference time:\t%d\tPSNR:\t%f\tSSIM:\t%f\n' % (t, inference_time, est_psnr, est_ssim))
+                    f.write('Video:\t%s\tFrame:\t%d\tInference time:\t%d\tPSNR:\t%f\tSSIM:\t%f\n' % (video_basename, t_video, inference_time, est_psnr, est_ssim))
                 t += 1
+                t_video += 1
 
                 # Show and write video 
                 if configs['eval']['watch']:
@@ -707,35 +709,42 @@ class TecoGAN(object):
                             if cv2.waitKey(1) == ord('p'):
                                 break
                     elif key == ord('q'):
+                        print('[INFO] Evaluation stopped.')
                         break
 
                 video_out.write(img_window_2)
  
-            # Show metrics
-            total_psnr = total_psnr / (t // 10)
-            total_ssim = total_ssim / (t // 10)
+            video_out.release()
+            f.write('\n')
 
-            total_bic_psnr = total_bic_psnr / (t // 10)
-            total_bic_ssim = total_bic_ssim / (t // 10)
-            
-            print('\n[INFO] Avg. Bicubic PSNR: %f\tAvg. FRVSR PSNR: %f' % (total_bic_psnr, total_psnr))
-            print('[INFO] Avg. Bicubic SSIM: %f\tAvg. FRVSR SSIM: %f' % (total_bic_ssim, total_ssim))
-            
+        # Show metrics
+        total_psnr = total_psnr / (t // 10)
+        total_ssim = total_ssim / (t // 10)
+
+        total_bic_psnr = total_bic_psnr / (t // 10)
+        total_bic_ssim = total_bic_ssim / (t // 10)
+        
+        print('\n[INFO] Avg. Bicubic PSNR: %f\tAvg. FRVSR PSNR: %f' % (total_bic_psnr, total_psnr))
+        print('[INFO] Avg. Bicubic SSIM: %f\tAvg. FRVSR SSIM: %f' % (total_bic_ssim, total_ssim))
+        f.write('Total PSNR:\t%f\tTotal SSIM:\t%f' % (total_psnr, total_ssim))
+        fwrite('Total bicubic PSNR:\t%f\%Total bicubic SSIM:\t%f' % (total_bic_psnr, total_bic_ssim))
+
         f.close()
+
         cv2.destroyAllWindows()
         print('\n[INFO] Video stopped.')
 
     # Run TecoGAN on single video or camera
     def run(self):
         # Load pretrained generator
-        print('[INFO] Loading pretrained model...')
+        print('[INFO] Loading pretrained model ...')
 
         if self.configs['cnn']['pretrained_model']:
             self.generator.load_weights(self.configs['cnn']['pretrained_model'])
 
         # Initialize variables
         print('[INFO] Model ready.')
-        print('[INFO] Running model...')
+        print('[INFO] Running model ...')
 
         rows = self.configs['data']['rows']
         cols = self.configs['data']['cols']
@@ -817,7 +826,7 @@ class TecoGAN(object):
             
             sub_prev_lr_frames = sub_lr_frames
 
-            border = (self.hr_shape[0]*rows - self.lr_shape[0]*cols) // 2
+            border = (self.hr_shape[0] - self.lr_shape[0]) * rows  // 2
 
             lr_scale = cv2.copyMakeBorder(lr_frame[0], border, border, border, border, cv2.BORDER_CONSTANT)
 
