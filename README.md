@@ -105,7 +105,7 @@ run:
 
 Al ejecutar el programa, `root_dir` indica el directorio a partir de la cual se buscan los datos a procesar, modelos pre-entrenados y se crean directorios para almacenar los datos de salida.
 
-`stage` contiene la habilitación de las tres etapas mencionadas previamente. En el ejemplo se puede ver que cada etapa tiene asociada ciertos parámetros, los cuales solo se utilizan en caso de estar activada la etapa correspondiente y no es necesario definir en caso de que la correspondiente etapa no se lleve a cabo.
+`stage` contiene la habilitación de las tres etapas mencionadas previamente. Cabe mencionar que en caso de no especificar alguna de estas etapas, por defecto queda deshabilitada. En el ejemplo se puede ver que cada etapa tiene asociada ciertos parámetros, los cuales solo se utilizan en caso de estar activada la etapa correspondiente, y no es necesario definir en caso de que la correspondiente etapa no se lleve a cabo.
 
 El parámetro `gpu` indica si la red neuronal se ejecutará mediante una Graphic Processing Unit (GPU). En caso de que se indique que no se hará uso la GPU, o no hubiera una disponible, por defecto se utiliza la Central processing Unit (CPU).
 
