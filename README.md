@@ -46,12 +46,12 @@ El archivo `.yaml` posee la misma estructura tanto para FRVSR como TecoGAN, exce
 ```
 root_dir: ./
 
-gpu: true
-
 stage:
 	train: true
 	eval: true
 	run: true
+
+gpu: true
 
 data:
 	low_res: 64
