@@ -67,45 +67,47 @@ El archivo `.yaml` posee la misma estructura tanto para FRVSR como TecoGAN, exce
 root_dir: ./
 
 stage:
-	train: true
-	eval: true
-	run: true
+    train: true
+    eval: true
+    run: true
 
 gpu: true
 
 data:
-	low_res: 64
-	high_res: 256
-	channels: 3
-	upscale: 4
-	videos:  [./dataset/cars, ./dataset/airplanes]
-	rows: 2
-	cols: 2
+    low_res: 64
+    high_res: 256
+    channels: 3
+    upscale: 4
+    videos: ./dataset/cars, ./dataset/airplanes
+    rows: 2
+    cols: 2
 
 cnn:
-	model: TecoGAN
-	pretrained_model: model_weights_250000.h5
+    model: TecoGAN
+    pretrained_model: model_weights_250000.h5
 
 train:
-	iterations: 950000
-	c_frames: 10
-	batch_size: 4
-	pretrained_disc: disc_model_weights_250000.h5
-	sample_freq: 2500
-	checkpoint_freq: 10000
-	info_freq: 1000
+    iterations: 950000
+    c_frames: 10
+    batch_size: 4
+    pretrained_disc: disc_model_weights_250000.h5
+    sample_freq: 2500
+    checkpoint_freq: 10000
+    info_freq: 1000
 
 eval:
-	watch: True
-	output_dir: ./cars_airplanes_metrics/
+    watch: True
+    output_dir: ./cars_airplanes_metrics/
 
 run:
-	video: volvo_car.mp4
+    video: volvo_car.mp4
 ```
 
 Al ejecutar el programa, `root_dir` indica el directorio a partir de la cual se buscan los datos a procesar, modelos pre-entrenados y se crean directorios para almacenar los datos de salida.
 
 `stage` contiene la habilitación de las tres etapas mencionadas previamente. En el ejemplo se puede ver que cada etapa tiene asociada ciertos parámetros, los cuales solo  se utilizan en caso de estar activada la etapa correspondiente.
+
+El parámetro `gpu` indica si se hará uso de una Graphic Processing Unit (GPU) para hacer uso de la red neuronal. En caso de que se indique que no se hará uso de esta, por defecto se utilizará la Central processing Unit (CPU).
 
 Dentro `cnn` se encuentran los parámetros que determinan qué red neuronal se utiliza y, en caso de haber, el modelo pre-entrenado. La red neuronal a utilizar está dada por `model`, en donde sus posibles valores `frvsr` y `tecogan`, indican si se debe hacer uso de la red FRVSR o TecoGAN respectivamente. Ya sea para el entrenamiento, evaluación o ejecución simple, `pretrained_model` corresponde al archivo que contiene el valor de los pesos a cargar en la red neuronal.
 
@@ -113,9 +115,9 @@ Dentro `cnn` se encuentran los parámetros que determinan qué red neuronal se u
 
 La baja y alta resolución para las redes neuronales, tanto en el alto como el ancho de los píxeles, está dada por `low_res` y `high_res` respectivamente, mientras que el número de canales en ambos casos se indica por medio de `channels`. Se advierte que si la proporción entre `low_res` y `high_res` no es igual a `upscale`, el programa indica un error con respecto a esto y termina inmediatamente.
 
-Ya sea en el entrenamiento o evaluación, `videos` corresponde al directorio o directorios que contienen los archivos de video a utilizar. En caso de que ambos procesos se lleven a cabo en la misma ejecución, el resultado de la evaluación correspondería a las métricas calculadas para los datos de entrenamiento.
+Ya sea en el entrenamiento o evaluación, `videos` corresponde al directorio o directorios que contienen los archivos de video a utilizar y separados por una coma, tal como se muestra en el ejemplo anterior. En caso de que ambos procesos se lleven a cabo en la misma ejecución, el resultado de la evaluación correspondería a las métricas calculadas para los datos utilizados durante el entrenamiento.
 
-En el caso de la evaluación y ejecución simple, el producto entre `rows` y `cols` determina la cantidad de sub imágenes a procesar, en donde estás sub imágenes son el resultado de dividir en cuadrantes la imagen original de interés. Esto permite que la red neuronal sea capaz de procesar imágenes de mayor tamaño, sin tener que modificar la configuración de la imagen de entrada y salida. 
+En el caso de la evaluación y ejecución simple, el producto entre `rows` y `cols` determina la cantidad de sub imágenes a procesar, en donde estás sub imágenes son el resultado de dividir en cuadrantes la imagen original de interés. Esto permite que la red neuronal sea capaz de procesar imágenes de mayor tamaño, sin tener que modificar la configuración de resolución de la imagen de entrada y salida de la red. 
 
 | Parámetro | Descripción                    |
 | ------------- | ------------------------------ |
