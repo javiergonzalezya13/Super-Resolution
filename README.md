@@ -156,7 +156,6 @@ Para la red TecoGAN,  se aclara que el archivo `pretrained_model` contiene los v
 | `iterations`      |    Iteraciones totales a realizar.     |
 | `c_frames`   |  Cantidad de imágenes consecutivas a extraer de cada muestra.     |
 |`batch_size`|Cantidad de muestras a obtener de los videos.|
-|`pretrained_model`|Archivo que contiene los pesos del modelo pre-entrenado a utilizar.|
 |`pretrained_disc`|Archivo que conteiene los pesos del modelo pre-entrenado del discriminador a utilizar para TecoGAN.|
 |`sample_freq`| Cantidad de iteraciones a ocurrir para generar una imagen de muestra a partir de la red neuronal.|
 |`checkpoint_freq`|Cantidad de iteraciones a ocurrir para guardar los pesos actuales de la red neuronal.|
