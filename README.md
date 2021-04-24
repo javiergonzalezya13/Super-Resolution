@@ -27,6 +27,26 @@ Para evitar problemas de compatibilidad de las bibliotecas utilizadas se debe te
 
 `$ pipenv shell`
 
+-------------------------------------------
+
+`$ pip3 install virtualenv`
+
+`$ sudo apt-get install python-virtualenv`
+
+`$ sudo -H pip3 install --upgrade pip`
+
+`$ python3 -m venv env`
+
+`$ sudo chmod 775 env/bin/activate`
+
+`$ env/bin/activate`
+
+`$ pip3 install -r requirement.txt`
+
+`$ pip3 list`
+
+`$ deactivate`
+
 De esta manera solo se debe ejecutar el programa dentro de este entorno.
 
 Las etapas habilitadas en la ejecución del programa son las siguientes:
