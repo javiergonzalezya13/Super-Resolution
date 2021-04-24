@@ -83,7 +83,7 @@ data:
     cols: 2
 
 cnn:
-    model: TecoGAN
+    model: tecogan
     pretrained_model: model_weights_250000.h5
 
 train:
