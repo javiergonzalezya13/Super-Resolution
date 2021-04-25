@@ -11,9 +11,7 @@ Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Reso
 
 ## Requerimientos
 
-Para hacer uso del programa se recomienda tener previamente instalado Python 3.6. Además, para hacer uso de las capacidades de las GPU, se recomienda tener instalado CUDA, la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, en su versión 10.0. Las instrucciones para su correcta instalación se encuentran en:
-
-<https://developer.nvidia.com/cuda-10.0-download-archive>
+Para hacer uso del programa se recomienda tener previamente instalado Python 3.6. Además, para hacer uso de las capacidades de las GPU, se recomienda tener instalado CUDA, la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, en su versión 10.0. Las instrucciones para su correcta instalación se encuentran en <https://developer.nvidia.com/cuda-10.0-download-archive>.
 
 Para evitar problemas de compatibilidad de las bibliotecas utilizadas se recomienda utilizar un entorno virtual para ejecutar el programa. Los requerimientos de bibliotecas se encuentran en el archivo `requirements.txt`. A continuación se muestra como instalar y configurar el entorno mediante `venv`.
 
