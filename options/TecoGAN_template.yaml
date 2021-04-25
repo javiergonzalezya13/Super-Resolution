@@ -2,8 +2,8 @@ root_dir: ./
 
 stage:
   train: true
-  eval: false
-  run: false
+  eval: true
+  run: true
 
 data:
   low_res: 64
