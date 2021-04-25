@@ -9,25 +9,13 @@ La súper-resolución es el conjunto de técnicas para aumentar la resolución e
 
 Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Resolution" (FRVSR) [1] y "Temporally Coherent GAN for Video Super-Resolution" (TecoGAN) [2].
 
-## Funcionamiento
+## Requerimientos
 
-Para evitar problemas de compatibilidad de las bibliotecas utilizadas se debe tener el archivo `Pipfile` y utilizar `pipenv`, el entorno virtual para Python.
+Para hacer uso del programa se recomienda tener previamente instalado Python 3.6. Además, para hacer uso de las capacidades de las GPU, se recomienda tener instalado CUDA, la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, en su versión 10.0. Las instrucciones para su correcta instalación se encuentran en:
 
-`$ sudo apt-get install youtube-dl`
+<https://developer.nvidia.com/cuda-10.0-download-archive>
 
-`$ youtube-dl -f best -a list.txt`
-
-`$ sudo apt update`
-
-`$ sudo apt install python3-pip`
-
-`$ pip3 install pipenv`
-
-`$ pipenv install -r requirements.txt`
-
-`$ pipenv shell`
-
--------------------------------------------
+Para evitar problemas de compatibilidad de las bibliotecas utilizadas se recomienda utilizar un entorno virtual para ejecutar el programa. Los requerimientos de bibliotecas se encuentran en el archivo `requirements.txt`. A continuación se muestra como instalar y configurar el entorno mediante `venv`.
 
 `$ pip3 install virtualenv`
 
@@ -43,11 +31,15 @@ Para evitar problemas de compatibilidad de las bibliotecas utilizadas se debe te
 
 `$ pip3 install -r requirement.txt`
 
+Se puede confirmar la correcta instalación de las bibliotecas dentro del entorno mediante el comando `list` de `pip3`.
+
 `$ pip3 list`
+
+El entorno puede desactivarse luego de finalizar, mediante el comando `deactivate`.
 
 `$ deactivate`
 
-De esta manera solo se debe ejecutar el programa dentro de este entorno.
+## Funcionamiento
 
 Las etapas habilitadas en la ejecución del programa son las siguientes:
 * __Entrenamiento__: Entrenamiento de la red neuronal seleccionada bajo los parámetros definidos.
@@ -98,6 +90,7 @@ train:
 eval:
     watch: True
     output_dir: ./cars_airplanes_metrics/
+    yolo_model: yolo_model.h5
 
 run:
     video: volvo_car.mp4
@@ -162,17 +155,17 @@ Para la red TecoGAN,  se aclara que el archivo `pretrained_model` contiene los v
 |`info_freq`| Cantidad de iteraciones a ocurrir para mostrar por consola las métricas calculadas.|
 
 
-
-
-
 ### Evaluación
 
-La evaluación calcula las métricas de Peak Signal-to-Ratio (PSNR), Structual Similarity Index Measure (SSIM), tiempos de inferencia de la red neuronal, la cantidad de cuadros por segundo y la métrica YOLO, guardando todos estos datos en un archivo `.txt` Adicionalmente, guarda el o los archivos de video generados por las estimaciones de la red neuronal, dando la opción de ver en vivo el resultado del procesamiento al habilitar el parámetro `watch`. Todos los archivos obtenidos durante la evaluación quedan almacenados en el directorio `output_dir`.
+La evaluación calcula las métricas de Peak Signal-to-Ratio (PSNR), Structual Similarity Index Measure (SSIM), tiempos de inferencia de la red neuronal, la cantidad de cuadros por segundo y la métrica YOLO, guardando todos estos datos en archivos `.txt`. Adicionalmente, guarda los archivos de video generados por las estimaciones de la red neuronal y YOLO por separado, dando la opción de ver en vivo el resultado del procesamiento de súper-resolución al habilitar el parámetro `watch`. Todos los archivos obtenidos durante la evaluación quedan almacenados en el directorio `output_dir`.
+
+`yolo_model` corresponde al modelo pre-entrenado de YOLO. Si no se indica 
 
 | Parámetro | Descripción                    |
 | ------------- | ------------------------------ |
 |`watch`| Habilita la opción de mostrar los videos en vivo a medida que se procesan.|
 |`output_dir`| Directorio de salida.|
+|`yolo_model`| Archivo con los pesos del modelo pre-entrenado de YOLO.|
 
 ### Ejecución simple
 
