@@ -27,7 +27,7 @@ Para evitar problemas de compatibilidad de las bibliotecas utilizadas se recomie
 
 `$ env/bin/activate`
 
-`$ pip3 install -r requirement.txt`
+`$ pip3 install -r requirements.txt`
 
 Se puede confirmar la correcta instalación de las bibliotecas dentro del entorno mediante el comando `list` de `pip3`.
 
