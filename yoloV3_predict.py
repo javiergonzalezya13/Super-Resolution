@@ -176,7 +176,7 @@ def draw_boxes(image, v_boxes, v_labels, v_scores):
 class YoloV3(object):
     def __init__(self, configs, model='yolo_model.h5', class_threshold=0.6):
         # load yolov3 model
-        self.model = load_model(configs['rec']['pretrained_model'])
+        self.model = load_model(configs['eval']['yolo_model'])
         # define the expected input shape for the model
         self.input_w = configs['data']['high_res'] * configs['data']['cols']
         self.input_h = configs['data']['high_res'] * configs['data']['rows']
@@ -252,7 +252,7 @@ class YoloV3(object):
         print('\n[INFO] Object recognition ready.')
         f.close()
 
-    def predict_image(self, image, image_out, labels_file):
+    def predict_image(self, image, labels_file):
         # load and prepare image
         frame = normalize(image)
         frame = expand_dims(frame, 0)
@@ -275,4 +275,5 @@ class YoloV3(object):
         # draw what we found
         frame = denormalize(frame[0])
         image = draw_boxes(frame, v_boxes, v_labels, v_scores)
-        cv2.imwrite(image_out, image)
+        # cv2.imwrite(image_out, image)
+        return image

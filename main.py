@@ -67,10 +67,6 @@ if __name__ == '__main__':
                 MODEL = FrameRecurrentVideoSR(LR_SHAPE, HR_SHAPE, OUTPUT_DIR, configs)
             elif configs['cnn']['model'] == 'tecogan':
                 MODEL = TecoGAN(LR_SHAPE, HR_SHAPE, OUTPUT_DIR, configs)
-            # elif configs['cnn']['model'] == 'edvr':
-            #     MODEL = EDVR(LR_SHAPE, HR_SHAPE, OUTPUT_DIR, configs)
-            # elif configs['cnn']['model'] == 'edvr_v2':
-            #     MODEL = EDVR_v2(configs, OUTPUT_DIR, inp_shape=LR_SHAPE, nframes=5)
             else:
                 print('[ERROR] Not valid model selected.')
                 sys.exit(0)
@@ -88,8 +84,3 @@ if __name__ == '__main__':
         if configs['stage']['run']:
             MODEL.run()
 
-        # Recognition with YOLO V3
-        # K.clear_session()
-        # if configs['stage']['rec']:
-        #     YOLO_MODEL = YoloV3(configs)
-        #     YOLO_MODEL.predict()

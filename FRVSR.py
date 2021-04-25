@@ -14,7 +14,7 @@ from keras.utils import plot_model
 
 from layers import *
 from utils import *
-
+from yoloV3_predict import YoloV3
 
 class FrameRecurrentVideoSR(object):
     def __init__(self, lr_shape, hr_shape, output_dir, configs):
@@ -103,7 +103,7 @@ class FrameRecurrentVideoSR(object):
         videos = get_videos(configs) 
 
         # Load pretrained FRVSR and set current iteration
-        if 'pretrained_model' in self.configs['train']:
+        if self.configs['cnn']['pretrained_model']:
             print('[INFO] Loading pretrained model ...')
             self.frvsr.load_weights(self.configs['cnn']['pretrained_model'])
             name = os.path.splitext(self.configs['cnn']['pretrained_model'])[0]
@@ -221,8 +221,8 @@ class FrameRecurrentVideoSR(object):
         # Load pretrained model
         print('[INFO] Loading pretrained model ...')
 
-        if self.configs['eval']['pretrained_model']:
-            self.configs['eval']['pretrained_model'] = os.path.join(self.configs['root_dir'],
+        if self.configs['cnn']['pretrained_model']:
+            self.configs['cnn']['pretrained_model'] = os.path.join(self.configs['root_dir'],
                                                                     self.configs['cnn']['pretrained_model'])
             self.frvsr.load_weights(self.configs['cnn']['pretrained_model'])
 
@@ -231,6 +231,11 @@ class FrameRecurrentVideoSR(object):
         print('[INFO] Evaluating model ...')
         os.makedirs(self.configs['eval']['output_dir'], exist_ok=True)
         f = open(os.path.join(self.configs['eval']['output_dir'], 'metrics.txt'), 'w+')
+
+        apply_yolo = False
+        if self.configs['eval']['yolo_model']:
+            apply_yolo = True
+            yolo = YoloV3(self.configs)
 
         rows = self.configs['data']['rows']
         cols = self.configs['data']['cols']
@@ -254,8 +259,9 @@ class FrameRecurrentVideoSR(object):
         os.makedirs(self.configs['eval']['output_dir'], exist_ok=True)
 
         # Process videos
-        videos = get_videos(configs)
+        videos = get_videos(self.configs)
         for video in videos:
+
             cap = cv2.VideoCapture(video)
             video_basename = os.path.basename(video)
             video_file = os.path.join(self.configs['eval']['output_dir'], video_basename)
@@ -278,7 +284,7 @@ class FrameRecurrentVideoSR(object):
                 hr_frame = cv2.resize(frame,
                                       (self.hr_shape[0]*rows,
                                        self.hr_shape[1]*cols),
-                                      interpolation=cv2.INTER_CUBIC)
+                                       interpolation=cv2.INTER_CUBIC)
 
                 lr_frame = np.array([cv2.resize(cv2.GaussianBlur(hr_frame, (5, 5), 0),
                                                 (self.lr_shape[0]*rows,
@@ -317,19 +323,6 @@ class FrameRecurrentVideoSR(object):
 
                 sub_prev_lr_frames = sub_lr_frames
                 
-                border = (self.hr_shape[0] - self.lr_shape[0]) * rows // 2
-
-                lr_scale = cv2.copyMakeBorder(lr_frame[0], border, border, border, border, cv2.BORDER_CONSTANT)
-
-                img_windows.append(lr_scale)
-                img_windows.append(est_frame[0])
-                img_windows.append(bicubic_frame)
-                img_windows.append(nearest_frame)
-            
-                img_window = np.zeros((window_rows*self.hr_shape[0]*rows,
-                                       window_cols*self.hr_shape[1]*cols,
-                                       self.hr_shape[2]))
-
                 t2 = datetime.datetime.now()
                 delta_t = t2 - t1
                 t1 = datetime.datetime.now()
@@ -352,37 +345,31 @@ class FrameRecurrentVideoSR(object):
                     total_ssim += est_ssim
                     total_bic_ssim += bic_ssim
 
+                    if apply_yolo:
+                        yolo_frame = yolo.predict_image(denormalize(est_frame[0]), yolo_f)
+
                     print('\n[INFO] Running at: %d[fps] \t FRVSR inference time: %d[ms] \t Total inference time: %d[ms]' % (fps, inference_time, delta_t.total_seconds() * 1000))
                     print('[INFO] Nearest PSNR: %f \t Bicubic PSNR: %f \t FRVSR PSNR: %f' % (nearest_psnr, bic_psnr, est_psnr))
                     print('[INFO] Nearest SSIM: %f \t Bicubic SSIM: %f \t FRVSR SSIM: %f' % (nearest_ssim, bic_ssim, est_ssim))
-                    f.write('Frame:\t%d\tInference time:\t%d\tPSNR:\t%f\tSSIM:\t%f\n' % (t, inference_time, est_psnr, est_ssim))
+                    f.write('Video:\t%s\tFrame:\t%d\tInference time:\t%d\tPSNR:\t%f\tSSIM:\t%f\n' % (video_basename, t_video, inference_time, est_psnr, est_ssim))
                 t += 1
                 t_video += 1
 
                 # Show and write video
-                if configs['eval']['watch']:
-                    text_window = 'FPS:%d' % fps
-                    window_title = 'Original / FRVSR / Bicubic / Nearest'
-                    
-                    cv2.putText(img_window, text_window, (0, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 1, 0), 1, cv2.LINE_4)
+                img_window = denormalize(est_frame[0])
 
-                    img_window_2 = denormalize(est_frame[0])
-                    cv2.imshow(window_title, img_window_2)
+                if self.configs['eval']['watch']:
+                    window_title = 'FRVSR evaluation'
+                    cv2.waitKey(1)
+                    cv2.imshow(window_title, img_window)
 
-                    key = cv2.waitKey(1)
-                    if key == ord('p'):
-                        while True:
-                            cv2.imshow(window_title, img_window)
-                            if cv2.waitKey(1) == ord('p'):
-                                break
-                    elif key == ord('q'):
-                        print('[INFO] Evaluation stopped.')
-                        break
-
-                video_out.write(img_window_2)
+                video_out.write(img_window)
 
             video_out.release()
             f.write('\n')
+
+            if apply_yolo:
+                yolo_f.write('\n')
 
         # Show average metrics        
         total_psnr = total_psnr / (t // 10)
@@ -397,6 +384,8 @@ class FrameRecurrentVideoSR(object):
         f.write('Total bicubuc PSNR:\t%f\tTotal bicubic SSIM:\t%f' % (total_bic_psnr, total_bic_ssim))
 
         f.close()
+        if apply_yolo:
+            yolo_f.close()
 
         cv2.destroyAllWindows()
         print('\n[INFO] Video stopped.')
@@ -445,11 +434,13 @@ class FrameRecurrentVideoSR(object):
             img_windows = []
             img_window = np.array([])
 
+            # Resize to high and low resolution
             ret, frame = cap.read()
             if not ret:
                 break
 
-            # Resize to high and low resolution
+            frame = normalize(frame)
+
             hr_frame = cv2.resize(frame,
                                   (self.hr_shape[0]*rows,
                                    self.hr_shape[1]*cols),
@@ -475,9 +466,9 @@ class FrameRecurrentVideoSR(object):
 
             # Get estimated sub images
             inference_time_1 = datetime.datetime.now()
-            sub_est_frames, _ = self.frvsr.predict([normalize(sub_lr_frames),
-                                                    normalize(sub_prev_lr_frames),
-                                                    normalize(sub_est_frames)])
+            sub_est_frames, _ = self.frvsr.predict([sub_lr_frames,
+                                                    sub_prev_lr_frames,
+                                                    sub_est_frames])
             inference_time_2 = datetime.datetime.now()
 
             # Arrange estimated sub images
@@ -498,7 +489,7 @@ class FrameRecurrentVideoSR(object):
             lr_scale = cv2.copyMakeBorder(lr_frame[0], border, border, border, border, cv2.BORDER_CONSTANT)
 
             img_windows.append(lr_scale)
-            img_windows.append(denormalize(est_frame[0]))
+            img_windows.append(est_frame[0])
             img_windows.append(bicubic_frame)
             img_windows.append(hr_frame)
 
@@ -539,10 +530,11 @@ class FrameRecurrentVideoSR(object):
             # Show video
             text_window = 'FPS:%d' % fps
 
-            window_title = 'Original / Frame-Recurrent Video Super Resolution / Bicubic / Nearest'
+            img_window = denormalize(img_window)
+            
+            window_title = 'Original / FRVSR / Bicubic / Nearest'
             cv2.putText(img_window, text_window, (0, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 255, 0), 1, cv2.LINE_4)
 
-            img_window = normalize(img_window)
             cv2.imshow(window_title, img_window)
 
             key = cv2.waitKey(1)

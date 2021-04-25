@@ -23,13 +23,8 @@ def check_yaml(configs):
 # Get videos list from configs
 def get_videos(configs):
     videos = []
-    if isinstance(self.configs['data']['videos'], list):
-        for data_dir in self.configs['data']['videos']:
-            for f in os.listdir(data_dir):
-                if os.path.isfile(os.path.join(data_dir, f)):
-                    videos.append(os.path.join(data_dir, f))
-    else:
-        data_dir = self.configs['data']['videos']
+    configs['data']['videos'] = configs['data']['videos'].replace(' ', '').split(',')
+    for data_dir in configs['data']['videos']:
         for f in os.listdir(data_dir):
             if os.path.isfile(os.path.join(data_dir, f)):
                 videos.append(os.path.join(data_dir, f))
