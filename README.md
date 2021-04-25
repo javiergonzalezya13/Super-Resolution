@@ -33,7 +33,7 @@ Se puede confirmar la correcta instalación de las bibliotecas dentro del entorn
 
 `$ pip3 list`
 
-El entorno puede desactivarse luego de finalizar, mediante el comando `deactivate`.
+El entorno puede desactivarse, luego de haber finalizado, mediante el comando `deactivate`.
 
 `$ deactivate`
 
