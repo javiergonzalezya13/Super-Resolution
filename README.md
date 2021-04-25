@@ -155,9 +155,7 @@ Para la red TecoGAN,  se aclara que el archivo `pretrained_model` contiene los v
 
 ### Evaluación
 
-La evaluación calcula las métricas de Peak Signal-to-Ratio (PSNR), Structual Similarity Index Measure (SSIM), tiempos de inferencia de la red neuronal, la cantidad de cuadros por segundo y la métrica YOLO, guardando todos estos datos en archivos `.txt`. Adicionalmente, guarda los archivos de video generados por las estimaciones de la red neuronal y YOLO por separado, dando la opción de ver en vivo el resultado del procesamiento de súper-resolución al habilitar el parámetro `watch`. Todos los archivos obtenidos durante la evaluación quedan almacenados en el directorio `output_dir`.
-
-`yolo_model` corresponde al modelo pre-entrenado de YOLO. Si no se indica 
+La evaluación calcula las métricas de Peak Signal-to-Ratio (PSNR), Structual Similarity Index Measure (SSIM), tiempos de inferencia de la red neuronal, la cantidad de cuadros por segundo y la métrica YOLO, guardando todos estos datos en archivos `.txt`. Adicionalmente, guarda los archivos de video generados por las estimaciones de la red neuronal, dando la opción de ver en vivo el resultado del procesamiento de súper-resolución al habilitar el parámetro `watch`. Todos los archivos obtenidos durante la evaluación quedan almacenados en el directorio `output_dir`. `yolo_model` corresponde al modelo pre-entrenado de YOLO, el cual en caso de no indicarse, deshabilita la obtención de esta métrica.
 
 | Parámetro | Descripción                    |
 | ------------- | ------------------------------ |
