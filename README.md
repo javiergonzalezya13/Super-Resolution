@@ -37,6 +37,12 @@ El entorno puede desactivarse, luego de haber finalizado, mediante el comando `d
 
 `$ deactivate`
 
+Los videos utilizados se encuentran especificados en el archivo `dataset.txt` y pueden obtenerse a través de `youtube-dl`, aplicación para descargar videos.
+
+`$ sudo apt install youtube-dl`
+
+`$ youtube-dl -a dataset.txt`
+
 ## Funcionamiento
 
 Las etapas habilitadas en la ejecución del programa son las siguientes:
