@@ -1,0 +1,38 @@
+root_dir: ./
+
+stage:
+  train: true
+  eval: true
+  run: true
+
+gpu: true
+
+data:
+  low_res: 64
+  high_res: 256
+  channels: 3
+  upscale: 4
+  videos: ./dataset/cars, ./dataset/airplanes, ./dataset/trains
+  rows: 2
+  cols: 2
+
+cnn:
+  model: tecogan
+  pretrained_model: gen_model_weights_150000.h5
+
+train:
+  iterations: 950000
+  batch_size: 4
+  c_frames: 10
+  pretrained_disc: disc_model_weights_150000.h5
+  sample_freq: 250
+  checkpoint_freq: 1000
+  info_freq: 100
+
+eval:
+  watch: true
+  output_dir: ./cars_airplanes_metrics/
+  yolo_model: yolo_model.h5
+  
+run:
+  video: volvo_car.mp4
