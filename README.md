@@ -15,12 +15,6 @@ Para hacer uso del programa se recomienda tener previamente instalado Python 3.6
 
 Para evitar problemas de compatibilidad de las bibliotecas utilizadas se recomienda utilizar un entorno virtual para ejecutar el programa. Los requerimientos de bibliotecas se encuentran en el archivo `requirements.txt`. A continuación se muestra como instalar y configurar el entorno mediante `venv`.
 
-`$ pip3 install virtualenv`
-
-`$ sudo apt-get install python-virtualenv`
-
-`$ sudo -H pip3 install --upgrade pip`
-
 `$ python3 -m venv env`
 
 `$ sudo chmod 775 env/bin/activate`
