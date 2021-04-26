@@ -11,13 +11,19 @@ Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Reso
 
 ## Testing
 
+`$ sudo apt update`
+
+`$ sudo apt-get install python3.7`
+
+`$ sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1`
+
 `$ sudo apt-get install python3-pip`
 
 `$ pip3 install pipenv`
 
 `$ pipenv shell`
 
-`$ pipenv install -r requirements`
+`$ pipenv install`
 
 
 
