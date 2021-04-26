@@ -191,6 +191,10 @@ Este método se encuentra implementado en la etapa de evaluación, en donde la i
   <img height="300" src="images/sr yolo.png">
 </p>
 
+El archivo con los pesos del modelo de YOLO que se utiliza para realizar la evaluación se obtiene como se muestra a continuación, en donde el archivo toma el nombre de `yolo_model.h5`.
+
+`$ python3 yoloV3_generate_model.py`
+
 ## Bibliografía
 
 [1] [Frame/Recurrent Video Super-Resolution](https://arxiv.org/pdf/1801.04590.pdf)  
