@@ -1,9 +1,9 @@
 root_dir: ./
 
 stage:
-  train: false
-  eval: false
-  run: false
+  train: true
+  eval: true
+  run: true
 
 gpu: true
 
@@ -12,13 +12,13 @@ data:
   high_res: 256
   channels: 3
   upscale: 4
-  videos: 
-  rows:
-  cols:
+  videos: ./dataset/cars, ./dataset/airplanes, ./dataset/trains
+  rows: 2
+  cols: 2
 
 cnn:
   model: frvsr
-  pretrained_model: FRVSR_example.h5
+  pretrained_model: frvsr_model_weights_200000.h5
 
 train:
   iterations: 2000000
@@ -31,6 +31,8 @@ train:
 eval:
   watch: true
   output_dir: ./cars_ariplanes_metrics/
+  yolo_model: yolo_model.h5
+  
 
 run:
   video: volvo_car.mp4
