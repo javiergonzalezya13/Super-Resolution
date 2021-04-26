@@ -9,6 +9,19 @@ La súper-resolución es el conjunto de técnicas para aumentar la resolución e
 
 Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Resolution" (FRVSR) [1] y "Temporally Coherent GAN for Video Super-Resolution" (TecoGAN) [2].
 
+## Testing
+
+`$ sudo apt-get install python3-pip`
+
+`$ pip3 install pipenv`
+
+`$ pipenv shell`
+
+`$ pipenv install -r requirements`
+
+
+
+
 ## Requerimientos
 
 Para hacer uso del programa se recomienda tener previamente instalado Python 3.6. Además, para hacer uso de las capacidades de las GPU, se recomienda tener instalado CUDA, la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, en su versión 10.0. Las instrucciones para su correcta instalación se encuentran en <https://developer.nvidia.com/cuda-10.0-download-archive>.
