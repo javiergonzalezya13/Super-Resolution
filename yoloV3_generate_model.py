@@ -166,4 +166,4 @@ weight_reader = WeightReader('yolov3.weights')
 # set the model weights into the model
 weight_reader.load_weights(model)
 # save the model to file
-model.save('model.h5')
+model.save('yolo_model.h5')
