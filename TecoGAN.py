@@ -233,7 +233,7 @@ class TecoGAN(object):
             loss = self.generator.train_on_batch(net_input, net_output)
 
             # Training information
-            if i % 100 == 0:
+            if i % self.configs['train']['info_freq'] == 0:
                 print('[INFO]', '-'*15, 'Iteration %d' % i, '-'*15)
                 print('[INFO] Total loss: %f \t Flow loss: %f \t SR loss: %f \t Learning rate: %f' % (loss[0], loss[1], loss[2], K.eval(self.generator.optimizer.lr)))
 
@@ -478,7 +478,7 @@ class TecoGAN(object):
                 loss = self.tecogan.train_on_batch(net_input, net_output)
             
             # Training information
-            if i % 50 == 0:
+            if i % self.configs['train']['info_freq'] == 0:
                 print('[INFO]', '-'*15, 'Iteration %d' % i, '-'*15)
                 print('[INFO] Total loss: %f \t Gen loss: %f \t Disc loss: %f' % (loss[0], loss[1], loss[2]))
 
