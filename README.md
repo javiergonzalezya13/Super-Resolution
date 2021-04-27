@@ -24,7 +24,7 @@ Los videos utilizados se encuentran especificados en el archivo `dataset.txt` y 
 
 Para hacer uso del programa es requerimiento tener instalado Python en su versión 3.6 o superior. Además, para hacer uso de las capacidades de la  Graphic Processing Unit (GPU), es necesario instalar CUDA, la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, en su versión 10.0. Las instrucciones para su correcta instalación se encuentran en <https://developer.nvidia.com/cuda-10.0-download-archive>. Si se desea utilizar el programa sin instalar CUDA, es necesario reemplazar en el archivo `Pipfile` la bilbioteca de `tensorflow-gpu` por `tensorflow`, manteniendo la versión especificada. Para este último caso se menciona que por defecto se usa la Central Processing Unit (CPU) para tratar con las redes neuronales.  
 
-Para evitar problemas de compatibilidad con las bibliotecas utilizadas, se recomienda utilizar un entorno virtual para ejecutar el programa. El entorno debe ejecutarse en la misma carpeta en que se encuentre el archivo `Pipfile`, el cual contiene los requerimientos de las bibliotecas se utilizan, para su correcta configuración. A continuación se muestra como instalar y configurar el entorno mediante `pipenv`.
+Para evitar problemas de compatibilidad con las bibliotecas utilizadas, se recomienda utilizar un entorno virtual para ejecutar el programa. Para la correcta configuración del entorno, este debe ejecutarse en la misma carpeta en que se encuentre el archivo `Pipfile`, el cual contiene los requerimientos de las bibliotecas utilizadas por el programa. A continuación se muestra como instalar y configurar el entorno mediante `pipenv`.
 
 `$ sudo apt update`
 
