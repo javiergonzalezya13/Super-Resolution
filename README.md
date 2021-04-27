@@ -9,22 +9,6 @@ La súper-resolución es el conjunto de técnicas para aumentar la resolución e
 
 Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Resolution" (FRVSR) [1] y "Temporally Coherent GAN for Video Super-Resolution" (TecoGAN) [2].
 
-## Testing
-
-`$ sudo apt update`
-
-`$ sudo apt-get install python3.7`
-
-`$ sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1`
-
-`$ sudo apt-get install python3-pip`
-
-`$ pip3 install pipenv`
-
-`$ pipenv shell`
-
-`(Super-Resolution) $ pipenv install`
-
 
 
 
