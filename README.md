@@ -199,7 +199,7 @@ Este método se encuentra implementado en la etapa de evaluación, en donde la i
   <img height="300" src="images/sr yolo.png">
 </p>
 
-El archivo con los pesos del modelo de YOLO que se utiliza para realizar la evaluación se obtiene como se muestra a continuación, en donde el archivo toma el nombre de `yolo_model.h5`.
+Para hacer uso de esta métrica, se debe tener previamente el archivo con los pesos de la red neuronal YOLO. Para generar este, solo basta con ejecutar `yoloV3_generate_model.py`, el cual guarda los pesos en `yolo_model.h5` y cuya ejecución se muestra a continuación. 
 
 `$ python3 yoloV3_generate_model.py`
 
