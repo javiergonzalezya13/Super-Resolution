@@ -60,26 +60,6 @@ class TecoGAN(object):
         self.discriminator = Discriminator(self.hr_shape).build()
         print('[INFO] Discriminator ready.')
 
-        # Save generator and discriminator blocks images
-        if self.configs['stage']['train']:
-            os.makedirs(self.output_dir)
-            plot_model(self.fnet, to_file=os.path.join(self.output_dir, 'FNet.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.srnet, to_file=os.path.join(self.output_dir, 'SRNet.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.upscaling, to_file=os.path.join(self.output_dir, 'Upscaling.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.hr_warp, to_file=os.path.join(self.output_dir, 'HR_Warp.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.lr_warp, to_file=os.path.join(self.output_dir, 'LR_Warp.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.space2depth, to_file=os.path.join(self.output_dir, 'Space2Depth.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.bicubic_upscale, to_file=os.path.join(self.output_dir, 'BicubicUpscale.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.discriminator, to_file=os.path.join(self.output_dir, 'Discriminator.jpg'),
-                       show_shapes=True, show_layer_names=True)
-
         # Assemble generator
         print('[INFO] Creating Temporally Coherent GAN ...')
         self.I_LR_t = Input(shape=self.lr_shape, name='I_LR_t')
@@ -149,18 +129,6 @@ class TecoGAN(object):
                                            3e-5, 1.4e-6, 6e-6, 2e-3, # VGG 22, 34, 44, 54
                                            0.25, 1.], # Ping-Pong, Warp
                              optimizer=self.opt)
-
-        # Save TecoGAN images
-        if self.configs['stage']['train']:
-            plot_model(self.generator, to_file=os.path.join(self.output_dir, 'Generator.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.discriminator,
-                       to_file=os.path.join(self.output_dir, 'Discriminator.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.tecogan, to_file=os.path.join(self.output_dir, 'TecoGAN.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.hr_warping, to_file=os.path.join(self.output_dir, 'HRWarping.jpg'),
-                       show_shapes=True, show_layer_names=True)
 
         print('[INFO] Temporally Coherent GAN ready.')
 
@@ -271,7 +239,7 @@ class TecoGAN(object):
                 img_window_lr = np.array([])
                 est_batch, _ = self.generator.predict([lr_batch[0:5], prev_lr_batch[0:5], prev_est_batch[0:5]])
 
-                for n in range(5):
+                for n in range(1):
                     try:
                         img_window_est = np.concatenate((img_window_est, denormalize(est_batch[n])), axis=1)
                         img_window_hr = np.concatenate((img_window_hr, denormalize(hr_batch[n])), axis=1)
