@@ -172,7 +172,7 @@ class TecoGAN(object):
         self.checkpoints_dir = os.path.join(self.output_dir, 'Checkpoints')
         os.makedirs(self.checkpoints_dir)
 
-        videos = get_videos(configs) 
+        videos = get_videos(self.configs) 
 
         # Load pretrained generator and discriminator, and set iteration current iteration
         pretrain_gen = True
