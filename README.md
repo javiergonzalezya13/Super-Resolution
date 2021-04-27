@@ -23,16 +23,22 @@ Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Reso
 
 `$ pipenv shell`
 
-`$ pipenv install`
+`(Super-Resolution) $ pipenv install`
 
 
 
 
 ## Requerimientos
 
+Los videos utilizados se encuentran especificados en el archivo `dataset.txt` y pueden obtenerse a través de `youtube-dl`, aplicación para descargar videos.
+
+`$ sudo apt install youtube-dl`
+
+`$ youtube-dl -a dataset.txt`
+
 Para hacer uso del programa se recomienda tener previamente instalado Python 3.6. Además, para hacer uso de las capacidades de las GPU, se recomienda tener instalado CUDA, la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, en su versión 10.0. Las instrucciones para su correcta instalación se encuentran en <https://developer.nvidia.com/cuda-10.0-download-archive>.
 
-Para evitar problemas de compatibilidad de las bibliotecas utilizadas se recomienda utilizar un entorno virtual para ejecutar el programa. Los requerimientos de bibliotecas se encuentran en el archivo `requirements.txt`. A continuación se muestra como instalar y configurar el entorno mediante `venv`.
+Para evitar problemas de compatibilidad de las bibliotecas utilizadas se recomienda utilizar un entorno virtual para ejecutar el programa. Los requerimientos de bibliotecas se encuentran en el archivo `requirements.txt`. A continuación se muestra como instalar y configurar el entorno mediante `pipenv`.
 
 `$ python3 -m venv env`
 
@@ -46,15 +52,10 @@ Se puede confirmar la correcta instalación de las bibliotecas dentro del entorn
 
 `$ pip3 list`
 
-El entorno puede desactivarse, luego de haber finalizado, mediante el comando `deactivate`.
+El entorno puede desactivarse, luego de haber finalizado, mediante el comando `exit`.
 
-`$ deactivate`
+`(Super-Resolution) $ exit`
 
-Los videos utilizados se encuentran especificados en el archivo `dataset.txt` y pueden obtenerse a través de `youtube-dl`, aplicación para descargar videos.
-
-`$ sudo apt install youtube-dl`
-
-`$ youtube-dl -a dataset.txt`
 
 ## Funcionamiento
 
@@ -67,7 +68,7 @@ Para realizar cualquier acción es necesario un archivo de configuración `.yaml
 
 **Ejemplo:**
 
-`$ python3 main.py --yaml_file options/demo.yaml`
+`(Super-Resolution)  $ python3 main.py --yaml_file options/demo.yaml`
 
 El archivo `.yaml` posee la misma estructura tanto para FRVSR como TecoGAN, excepto por un parámetro exclusivo de TecoGAN que, en caso de que existiese, indica el archivo con los valores de los parámetros internos de su discriminador.  El siguiente ejemplo contiene todos los parámetros que se pueden configurar, seguido de la descripción correspondiente de cada uno. 
 
