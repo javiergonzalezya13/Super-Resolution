@@ -49,22 +49,6 @@ class FrameRecurrentVideoSR(object):
         print('[INFO] Creating Space to Depth ...')
         self.space2depth = Space2Depth(self.hr_shape).build()
         print('[INFO] Space to Depth ready.')
-        
-        # Save blocks images 
-        if self.configs['stage']['train']:
-            os.makedirs(self.output_dir)
-            plot_model(self.fnet, to_file=os.path.join(self.output_dir, 'FNet.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.srnet, to_file=os.path.join(self.output_dir, 'SRNet.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.upscaling, to_file=os.path.join(self.output_dir, 'Upscaling.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.hr_warp, to_file=os.path.join(self.output_dir, 'HR_Warp.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.lr_warp, to_file=os.path.join(self.output_dir, 'LR_Warp.jpg'),
-                       show_shapes=True, show_layer_names=True)
-            plot_model(self.space2depth, to_file=os.path.join(self.output_dir, 'Space2Depth.jpg'),
-                       show_shapes=True, show_layer_names=True)
 
         # Assemble FRVSR
         print('[INFO] Creating Frame-Recurrent Video Super Resolution ...')
@@ -85,10 +69,6 @@ class FrameRecurrentVideoSR(object):
         self.opt = Adam(lr=1e-4)
         self.frvsr.compile(loss=['mean_squared_error', 'mean_squared_error'],
                            loss_weights=[1., 1.], optimizer=self.opt)
-
-        if self.configs['stage']['train']:
-            plot_model(self.frvsr, to_file=os.path.join(self.output_dir, 'FRVSR.jpg'),
-                       show_shapes=True, show_layer_names=True)
 
         print('[INFO] Frame-Recurrent Video Super Resolution ready.')
     
@@ -182,7 +162,7 @@ class FrameRecurrentVideoSR(object):
                 img_window_lr = np.array([])
                 est_batch, _ = self.frvsr.predict([lr_batch[0:5], prev_lr_batch[0:5], prev_est_batch[0:5]])
 
-                for n in range(5):
+                for n in range(1):
                     try:
                         img_window_est = np.concatenate((img_window_est, denormalize(est_batch[n])), axis=1)
                         img_window_hr = np.concatenate((img_window_hr, denormalize(hr_batch[n])), axis=1)
