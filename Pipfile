@@ -7,7 +7,7 @@ verify_ssl = true
 
 [packages]
 keras = "==2.2.4"
-opencv-python = "*"
+opencv-python = "==4.2.0.34"
 sklearn = "*"
 tensorflow-gpu = "==1.13.1"
 h5py = "==2.10.0"
