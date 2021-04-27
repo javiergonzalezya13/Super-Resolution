@@ -87,7 +87,12 @@ class FrameRecurrentVideoSR(object):
             print('[INFO] Loading pretrained model ...')
             self.frvsr.load_weights(self.configs['cnn']['pretrained_model'])
             name = os.path.splitext(self.configs['cnn']['pretrained_model'])[0]
-            i = int(name.split('_')[-1])
+            try:
+                i = int(name.split('_')[-1])
+            except ValueError:
+                print('[Info] Not valid initial iteration. Setting initial iteration to 0.')
+                i = 0
+            
             print('[INFO] Model ready.')
 
         print('[INFO] Starting training process...')
