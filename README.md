@@ -131,10 +131,6 @@ En el caso de la evaluación y ejecución simple, el producto entre `rows` y `co
 |`model`|Determina el modelo de red neuronal a utilizar.|
 |`pretrained_model`|Archivo con los pesos del modelo pre-entrenado|
 
-
-
-
-
 ### Entrenamiento
 
 Esta etapa se lleva a cabo hasta alcanzar el total de iteraciones indicadas por `iterations`.
@@ -170,13 +166,13 @@ La evaluación calcula las métricas de Peak Signal-to-Ratio (PSNR), Structual S
 
 ### Ejecución simple
 
-La ejecución simple corresponde al procesamiento en vivo del video dado por `video`, en donde se muestra el video original en alta resolución, en baja resolución, el resultado de aplicar interpolación bicúbica a la baja resolución, y, finalmente, el procesamiento por medio de la red neuronal. Se señala que en caso de que un video no sea indicado, se utiliza la cámara por defecto del equipo.
+La ejecución simple corresponde al procesamiento en vivo del video dado por `video`, en donde se muestra el video original en baja resolución, el procesamiento por medio de la red neuronal, el resultado de aplicar interpolación bicúbica a la baja resolución, y finalmente, el video original en alta resolución. Se señala que en caso de que un video no sea indicado, se utiliza la cámara por defecto del equipo.
 
 | Parámetros | Descripción                    |
 | ------------- | ------------------------------ |
 |`video`| Video a procesar. En caso de no especificar este, se utiliza la cámara por defecto.|
 
-El video que se muestra tiene la opción de pausarse mediante la tecla `p`, y reanudándose apretando la misma. Para terminar con la ejecución solo basta con apretar la tecla `q`.
+Además, el video que se muestra tiene la opción de pausarse mediante la tecla `p`, y reanudándose apretando la misma. Para terminar con la ejecución solo basta con apretar la tecla `q`.
 
 ## Demo
 
