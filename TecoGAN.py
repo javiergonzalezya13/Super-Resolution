@@ -178,7 +178,7 @@ class TecoGAN(object):
         rand_batch = np.array([])
 
         # Pretrain generator 
-        while i <= self.configs['train']['iterations'] // 2 and pretrain_gen:
+        while (i <= self.configs['train']['iterations'] // 2) and pretrain_gen:
             # Choose batch index
             rand_batch = np.random.randint(0, len(videos), size=self.configs['train']['batch_size'])
 
