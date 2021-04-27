@@ -288,6 +288,9 @@ class TecoGAN(object):
 
         print('[INFO] Starting TecoGAN training process ...')
 
+        if pretrain_gen:
+            i = 0
+        
         while i < self.configs['train']['iterations']:
             # Choose batch index
             rand_batch = np.random.randint(0, len(videos), size=self.configs['train']['batch_size'])
