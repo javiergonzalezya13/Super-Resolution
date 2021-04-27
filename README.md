@@ -176,7 +176,7 @@ La ejecución simple corresponde al procesamiento en vivo del video dado por `vi
 | ------------- | ------------------------------ |
 |`video`| Video a procesar. En caso de no especificar este, se utiliza la cámara por defecto.|
 
-El video que se muestra tiene la opción de pausarse mediante la tecla `p`, y reanudándse apretando la misma. Para terminar con la ejecución solo basta con apretar la tecla `q`.
+El video que se muestra tiene la opción de pausarse mediante la tecla `p`, y reanudándose apretando la misma. Para terminar con la ejecución solo basta con apretar la tecla `q`.
 
 ## Demo
 
