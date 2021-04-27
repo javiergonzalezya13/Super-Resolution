@@ -39,7 +39,7 @@ def get_frames(video, configs):
         frame_n = np.random.randint(0, total_frames)
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_n)
         hr_c_frames = []
-        for _ in range(configs['data']['c_frames']):
+        for _ in range(configs['train']['c_frames']):
             ret, hr_frame = cap.read()
             # Video completed
             if not ret:
