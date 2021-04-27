@@ -517,7 +517,7 @@ class FrameRecurrentVideoSR(object):
 
             img_window = denormalize(img_window)
             
-            window_title = 'Original / FRVSR / Bicubic / Nearest'
+            window_title = 'Original / FRVSR / Bicubic / High resolution'
             cv2.putText(img_window, text_window, (0, 30), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 255, 0), 1, cv2.LINE_4)
 
             cv2.imshow(window_title, img_window)
