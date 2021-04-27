@@ -169,8 +169,6 @@ class TecoGAN(object):
 
         print('[INFO] Starting generator training process ...')
 
-        self.configs['train']['iterations'] += 5e4
-
         gen_learning_rate = 1e-4 / 2 ** (i // 5e4)
         if gen_learning_rate < 2.5e-5:
             gen_learning_rate = 2.5e-5
@@ -178,7 +176,7 @@ class TecoGAN(object):
         rand_batch = np.array([])
 
         # Pretrain generator 
-        while (i <= self.configs['train']['iterations'] // 2) and pretrain_gen:
+        while (i < (self.configs['train']['iterations'] / 2)) and pretrain_gen:
             # Choose batch index
             rand_batch = np.random.randint(0, len(videos), size=self.configs['train']['batch_size'])
 
@@ -290,7 +288,7 @@ class TecoGAN(object):
 
         print('[INFO] Starting TecoGAN training process ...')
 
-        while i <= self.configs['train']['iterations']:
+        while i < self.configs['train']['iterations']:
             # Choose batch index
             rand_batch = np.random.randint(0, len(videos), size=self.configs['train']['batch_size'])
 
