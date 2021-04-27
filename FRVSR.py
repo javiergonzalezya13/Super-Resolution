@@ -100,7 +100,7 @@ class FrameRecurrentVideoSR(object):
         checkpoints_dir = os.path.join(self.output_dir, 'Checkpoints')
         os.makedirs(checkpoints_dir)
 
-        videos = get_videos(configs) 
+        videos = get_videos(self.configs) 
 
         # Load pretrained FRVSR and set current iteration
         if self.configs['cnn']['pretrained_model']:
