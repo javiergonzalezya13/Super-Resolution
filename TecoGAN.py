@@ -157,7 +157,12 @@ class TecoGAN(object):
             pretrained_gen_file = os.path.join(self.configs['root_dir'], self.configs['cnn']['pretrained_model'])
             self.generator.load_weights(pretrained_gen_file)
             name = os.path.splitext(self.configs['cnn']['pretrained_model'])[0]
-            i_init = int(name.split('_')[-1])
+            try:
+                i_init = int(name.split('_')[-1])
+            except ValueError:
+                print('[Info] Not valid initial iteration. Setting initial iteration to 0.')
+                i_init = 0
+
             i = i_init
             print('[INFO] Generator ready.')
 
