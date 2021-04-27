@@ -30,27 +30,31 @@ Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Reso
 
 ## Requerimientos
 
+El desarrollo de este trabajo se lleva a cabo en un sistema operativo Linux, Ubuntu 16.04, y por lo tanto se recomienda la ejecución de los códigos en un sistema similar.
+
 Los videos utilizados se encuentran especificados en el archivo `dataset.txt` y pueden obtenerse a través de `youtube-dl`, aplicación para descargar videos.
 
 `$ sudo apt install youtube-dl`
 
 `$ youtube-dl -a dataset.txt`
 
-Para hacer uso del programa se recomienda tener previamente instalado Python 3.6. Además, para hacer uso de las capacidades de las GPU, se recomienda tener instalado CUDA, la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, en su versión 10.0. Las instrucciones para su correcta instalación se encuentran en <https://developer.nvidia.com/cuda-10.0-download-archive>.
+Para hacer uso del programa es requerimiento tener instalado Python en su versión 3.6 o superior. Además, para hacer uso de las capacidades de la  Graphic Processing Unit (GPU), es necesario instalar CUDA, la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, en su versión 10.0. Las instrucciones para su correcta instalación se encuentran en <https://developer.nvidia.com/cuda-10.0-download-archive>. Si se desea utilizar el programa sin instalar CUDA, es necesario reemplazar en el archivo `Pipfile` la bilbioteca de `tensorflow-gpu` por `tensorflow`, manteniendo la versión especificada. Para este último caso se menciona que por defecto se usa la Central Processing Unit (CPU) para tratar con las redes neuronales.  
 
-Para evitar problemas de compatibilidad de las bibliotecas utilizadas se recomienda utilizar un entorno virtual para ejecutar el programa. Los requerimientos de bibliotecas se encuentran en el archivo `requirements.txt`. A continuación se muestra como instalar y configurar el entorno mediante `pipenv`.
+Para evitar problemas de compatibilidad con las bibliotecas utilizadas, se recomienda utilizar un entorno virtual para ejecutar el programa. Los requerimientos de bibliotecas se encuentran en el archivo `Pipfile`. A continuación se muestra como instalar y configurar el entorno mediante `pipenv`.
 
-`$ python3 -m venv env`
+`$ sudo apt update`
 
-`$ sudo chmod 775 env/bin/activate`
+`$ sudo apt-get install python3-pip`
 
-`$ env/bin/activate`
+`$ pip3 install pipenv`
 
-`$ pip3 install -r requirements.txt`
+`$ pipenv shell`
+
+`(Super-Resolution) $ pipenv install`
 
 Se puede confirmar la correcta instalación de las bibliotecas dentro del entorno mediante el comando `list` de `pip3`.
 
-`$ pip3 list`
+`(Super-Resolution) $ pip3 list`
 
 El entorno puede desactivarse, luego de haber finalizado, mediante el comando `exit`.
 
@@ -118,7 +122,7 @@ Al ejecutar el programa, `root_dir` indica el directorio a partir de la cual se 
 
 `stage` contiene la habilitación de las tres etapas mencionadas previamente. Cabe mencionar que en caso de no especificar alguna de estas etapas, por defecto queda deshabilitada. En el ejemplo se puede ver que cada etapa tiene asociada ciertos parámetros, los cuales solo se utilizan en caso de estar activada la etapa correspondiente, y no es necesario definir en caso de que la correspondiente etapa no se lleve a cabo.
 
-El parámetro `gpu` indica si la red neuronal se ejecutará mediante una Graphic Processing Unit (GPU). En caso de que se indique que no se hará uso la GPU, o no hubiera una disponible, por defecto se utiliza la Central processing Unit (CPU).
+El parámetro `gpu` indica si la red neuronal se ejecutará mediante una GPU. En caso de que se indique que no se hará uso la GPU, o no hubiera una disponible, por defecto se utiliza la CPU.
 
 Dentro de `cnn` se encuentran los parámetros que determinan qué red neuronal se utiliza y, en caso de haber, el modelo pre-entrenado. La red neuronal a utilizar está dada por `model`, en donde sus posibles valores `frvsr` y `tecogan`, indican si se debe hacer uso de la red FRVSR o TecoGAN respectivamente. Ya sea para el entrenamiento, evaluación o ejecución simple, `pretrained_model` corresponde al archivo que contiene el valor de los pesos a cargar en la red neuronal.
 
