@@ -534,7 +534,7 @@ class TecoGAN(object):
         if self.configs['cnn']['pretrained_model']:
             self.configs['cnn']['pretrained_model'] = os.path.join(self.configs['root_dir'],
                                                                     self.configs['cnn']['pretrained_model'])
-            self.frvsr.load_weights(self.configs['cnn']['pretrained_model'])
+            self.generator.load_weights(self.configs['cnn']['pretrained_model'])
 
         # Initialize variables and directories
         print('[INFO] Model ready.')
