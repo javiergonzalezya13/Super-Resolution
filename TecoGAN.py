@@ -489,7 +489,7 @@ class TecoGAN(object):
                 img_window_lr = np.array([])
                 est_batch, _ = self.generator.predict([lr_batch[0:5], prev_lr_batch[0:5], prev_est_batch[0:5]])
 
-                for n in range(5):
+                for n in range(1):
                     try:
                         img_window_est = np.concatenate((img_window_est, denormalize(est_batch[n])), axis=1)
                         img_window_hr = np.concatenate((img_window_hr, denormalize(hr_batch[n])), axis=1)
