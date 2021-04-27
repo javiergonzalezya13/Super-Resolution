@@ -176,6 +176,8 @@ La ejecución simple corresponde al procesamiento en vivo del video dado por `vi
 | ------------- | ------------------------------ |
 |`video`| Video a procesar. En caso de no especificar este, se utiliza la cámara por defecto.|
 
+El video que se muestra tiene la opción de pausarse mediante la tecla `p`, y reanudándse apretando la misma. Para terminar con la ejecución solo basta con apretar la tecla `q`.
+
 ## Demo
 
 En la carpeta `options` se encuentra el archivo `demo.yaml`, el cual establece la configuración para realizar la ejecución simple a través de la cámara de video y de la red neuronal FRVSR.
