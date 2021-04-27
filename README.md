@@ -9,14 +9,11 @@ La súper-resolución es el conjunto de técnicas para aumentar la resolución e
 
 Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Resolution" (FRVSR) [1] y "Temporally Coherent GAN for Video Super-Resolution" (TecoGAN) [2].
 
-
-
-
 ## Requerimientos
 
 El desarrollo de este trabajo se lleva a cabo en un sistema operativo Linux, Ubuntu 16.04, y por lo tanto se recomienda la ejecución de los códigos en un sistema similar.
 
-Los videos utilizados se encuentran especificados en el archivo `dataset.txt` y pueden obtenerse a través de `youtube-dl`, aplicación para descargar videos.
+Los videos utilizados durante el entrenamiento y evaluación se encuentran especificados en el archivo `dataset.txt`, los cuales pueden obtenerse a través de `youtube-dl`, aplicación para descargar videos.
 
 `$ sudo apt install youtube-dl`
 
