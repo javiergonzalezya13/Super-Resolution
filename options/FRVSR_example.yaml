@@ -33,6 +33,5 @@ eval:
   output_dir: ./cars_ariplanes_metrics/
   yolo_model: yolo_model.h5
   
-
 run:
   video: volvo_car.mp4
