@@ -11,14 +11,6 @@ Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Reso
 
 ## Requerimientos
 
-El desarrollo de este trabajo se lleva a cabo en un sistema operativo Linux, Ubuntu 16.04, y por lo tanto se recomienda la ejecución de los códigos en un sistema similar.
-
-Los videos utilizados durante el entrenamiento y evaluación se encuentran especificados en el archivo `dataset.txt`, los cuales pueden obtenerse a través de `youtube-dl`, aplicación para descargar videos.
-
-`$ sudo apt install youtube-dl`
-
-`$ youtube-dl -a dataset.txt`
-
 Para hacer uso del programa es requerimiento tener instalado Python en su versión 3.6 o superior. Además, para hacer uso de las capacidades de la  Graphic Processing Unit (GPU), es necesario instalar [CUDA 10.0](https://developer.download.nvidia.com/compute/cuda/10.0/Prod/docs/sidebar/CUDA_Installation_Guide_Linux.pdf), la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, y [cuDNN 7.0](https://docs.nvidia.com/deeplearning/cudnn/developer-guide/index.html), o una versión compatible con CUDA 10.0, y la cual es una biblioteca que permite la aceleración mediante GPU de redes neuronales. Si se desea utilizar el programa sin estas dependencias, es necesario reemplazar en el archivo `Pipfile` la bilbioteca de `tensorflow-gpu` por `tensorflow`, manteniendo la versión especificada. Para este último caso se menciona que por defecto se usa la Central Processing Unit (CPU) para tratar con las redes neuronales.  
 
 Para evitar problemas de compatibilidad con las bibliotecas utilizadas, se recomienda utilizar un entorno virtual para ejecutar el programa. Para la correcta configuración del entorno, este debe ejecutarse en la misma carpeta en que se encuentre el archivo `Pipfile`, el cual contiene los requerimientos de las bibliotecas utilizadas por el programa. A continuación se muestra como instalar y configurar el entorno mediante `pipenv`.
@@ -37,10 +29,23 @@ Se puede confirmar la correcta instalación de las bibliotecas dentro del entorn
 
 `(Super-Resolution) $ pip3 list`
 
+En la carpeta `options` se encuentra el archivo `demo.yaml`, el cual establece la configuración para realizar la ejecución simple a través de la cámara de video y de la red neuronal FRVSR.
+
+`$ python3 main.py --yaml_file options/demo.yaml`
+
 El entorno puede desactivarse, luego de haber finalizado, mediante el comando `exit`.
 
 `(Super-Resolution) $ exit`
 
+## Conjunto de datos
+
+El desarrollo de este trabajo se lleva a cabo en un sistema operativo Linux, Ubuntu 16.04, y por lo tanto se recomienda la ejecución de los códigos en un sistema similar.
+
+Los videos utilizados durante el entrenamiento y evaluación se encuentran especificados en el archivo `dataset.txt`, los cuales pueden obtenerse a través de `youtube-dl`, aplicación para descargar videos.
+
+`$ sudo apt install youtube-dl`
+
+`$ youtube-dl -a dataset.txt`
 
 ## Funcionamiento
 
@@ -173,12 +178,6 @@ La ejecución simple corresponde al procesamiento en vivo del video dado por `vi
 |`video`| Video a procesar. En caso de no especificar este, se utiliza la cámara por defecto.|
 
 Además, el video que se muestra tiene la opción de pausarse mediante la tecla `p`, y reanudándose apretando la misma. Para terminar con la ejecución solo basta con apretar la tecla `q`.
-
-## Demo
-
-En la carpeta `options` se encuentra el archivo `demo.yaml`, el cual establece la configuración para realizar la ejecución simple a través de la cámara de video y de la red neuronal FRVSR.
-
-`$ python3 main.py --yaml_file options/demo.yaml`
 
 ## Métrica YOLO
 
