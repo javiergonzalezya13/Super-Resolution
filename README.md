@@ -62,6 +62,24 @@ Los videos utilizados durante el entrenamiento y evaluación se encuentran espec
 
 `$ youtube-dl -a dataset.txt`
 
+## Métrica YOLO
+
+La métrica YOLO corresponde a un sistema alternativo para evaluar las imágenes generadas por las redes neuronales, la cual hace uso de la red neuronal "You Only Look Once v3" [3], un sistema de detección de objetos en el estado del arte.
+
+<p align="center">
+  <img height="400" src="images/yolo example.png">
+</p>
+
+Este método se encuentra implementado en la etapa de evaluación, en donde la idea es obtener el video en alta resolución a partir del modelo deseado para luego, a través de la red YOLO, obtener una lista de los obtejos detectados junto con su porcentaje de certeza.
+
+<p align="center">
+  <img height="300" src="images/sr yolo.png">
+</p>
+
+Para hacer uso de esta métrica, se debe tener previamente el archivo con los pesos de la red neuronal YOLO. Para generar este, solo basta con ejecutar `yoloV3_generate_model.py`, el cual guarda los pesos en `yolo_model.h5` y cuya ejecución se muestra a continuación. 
+
+`$ python3 yoloV3_generate_model.py`
+
 ## Funcionamiento
 
 Para realizar cualquier acción es necesario especificar la ubicación del archivo de configuración `.yaml` como único parámetro de entrada. Adicionalmente, dentro de la carpeta `options`, se tiene el archivo `demo.yaml`, el cual establece la configuración para realizar la ejecución simple a través de la cámara de video, y las plantillas de las redes FRVSR y TecoGAN.
@@ -189,23 +207,7 @@ La ejecución simple corresponde al procesamiento en vivo del video dado por `vi
 
 Además, el video que se muestra tiene la opción de pausarse mediante la tecla `p`, y reanudándose apretando la misma. Para terminar con la ejecución solo basta con apretar la tecla `q`.
 
-## Métrica YOLO
 
-La métrica YOLO corresponde a un sistema alternativo para evaluar las imágenes generadas por las redes neuronales, la cual hace uso de la red neuronal "You Only Look Once v3" [3], un sistema de detección de objetos en el estado del arte.
-
-<p align="center">
-  <img height="400" src="images/yolo example.png">
-</p>
-
-Este método se encuentra implementado en la etapa de evaluación, en donde la idea es obtener el video en alta resolución a partir del modelo deseado para luego, a través de la red YOLO, obtener una lista de los obtejos detectados junto con su porcentaje de certeza.
-
-<p align="center">
-  <img height="300" src="images/sr yolo.png">
-</p>
-
-Para hacer uso de esta métrica, se debe tener previamente el archivo con los pesos de la red neuronal YOLO. Para generar este, solo basta con ejecutar `yoloV3_generate_model.py`, el cual guarda los pesos en `yolo_model.h5` y cuya ejecución se muestra a continuación. 
-
-`$ python3 yoloV3_generate_model.py`
 
 ## Bibliografía
 
