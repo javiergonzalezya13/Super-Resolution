@@ -11,13 +11,21 @@ Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Reso
 
 ## Requerimientos
 
-Para hacer uso del programa es requerimiento tener instalado Python en su versión 3.6 o superior. Además, para hacer uso de las capacidades de la  Graphic Processing Unit (GPU), es necesario instalar [CUDA 10.0](https://developer.download.nvidia.com/compute/cuda/10.0/Prod/docs/sidebar/CUDA_Installation_Guide_Linux.pdf), la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, y [cuDNN 7.0](https://docs.nvidia.com/deeplearning/cudnn/developer-guide/index.html), o una versión compatible con CUDA 10.0, y la cual es una biblioteca que permite la aceleración mediante GPU de redes neuronales. Si se desea utilizar el programa sin estas dependencias, es necesario reemplazar en el archivo `Pipfile` la bilbioteca de `tensorflow-gpu` por `tensorflow`, manteniendo la versión especificada. Para este último caso se menciona que por defecto se usa la Central Processing Unit (CPU) para tratar con las redes neuronales.  
+Para hacer uso del programa es requerimiento tener instalado Python en su versión 3.6 o superior, y la herramienta `pip3`. 
 
-Para evitar problemas de compatibilidad con las bibliotecas utilizadas, se recomienda utilizar un entorno virtual para ejecutar el programa. Para la correcta configuración del entorno, este debe ejecutarse en la misma carpeta en que se encuentre el archivo `Pipfile`, el cual contiene los requerimientos de las bibliotecas utilizadas por el programa. A continuación se muestra como instalar y configurar el entorno mediante `pipenv`.
+`$ sudo apt update`
+
+`$ sudo apt-get install python3.6`
 
 `$ sudo apt update`
 
 `$ sudo apt-get install python3-pip`
+
+Si se quiere hacer uso de las capacidades de la  Graphic Processing Unit (GPU), es necesario instalar [CUDA 10.0](https://developer.download.nvidia.com/compute/cuda/10.0/Prod/docs/sidebar/CUDA_Installation_Guide_Linux.pdf), la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, y [cuDNN 7.0](https://docs.nvidia.com/deeplearning/cudnn/developer-guide/index.html), o una versión compatible con CUDA 10.0, y la cual es una biblioteca que permite la aceleración mediante GPU de redes neuronales.
+
+Caso contrario, si el pgrograma se ejecutará solamente utilizando la Central Processing Unit (CPU), es necesario reemplazar en el archivo `Pipfile` la bilbioteca de `tensorflow-gpu` por `tensorflow`, manteniendo la versión especificada. Se advierte que el usar las redes neuronales con CPU baja considerablemente la velocidad de procesamiento.
+
+Para evitar problemas de compatibilidad con las bibliotecas utilizadas, se recomienda utilizar un entorno virtual para ejecutar el programa. Para la correcta configuración del entorno, este debe ejecutarse en la misma carpeta en que se encuentre el archivo `Pipfile`, el cual contiene los requerimientos de las bibliotecas utilizadas por el programa. A continuación se muestra como instalar y configurar el entorno mediante `pipenv`.
 
 `$ pip3 install pipenv`
 
@@ -29,11 +37,13 @@ Se puede confirmar la correcta instalación de las bibliotecas dentro del entorn
 
 `(Super-Resolution) $ pip3 list`
 
-En la carpeta `options` se encuentra el archivo `demo.yaml`, el cual establece la configuración para realizar la ejecución simple a través de la cámara de video y de la red neuronal FRVSR.
+Adicionalmente, se da un ejemplo para realizar la ejecución simple utilizando la cámara de video. En la carpeta `options`, se encuentra el archivo `demo.yaml`, el cual establece la configuración para realizar la ejecución simple a través del model de red neuronal FRVSR. A continuación se muestra el comando para llevar todo esto a cabo.
 
-`$ python3 main.py --yaml_file options/demo.yaml`
+`(Super-Resolution) $ python3 main.py --yaml_file options/demo.yaml`
 
-El entorno puede desactivarse, luego de haber finalizado, mediante el comando `exit`.
+El video que se muestra tiene la opción de pausarse mediante la tecla `p`, y reanudándose apretando la misma. Para terminar con la ejecución solo basta con apretar la tecla `q`.
+
+Por último, el entorno puede desactivarse, luego de haber finalizado, mediante el comando `exit`.
 
 `(Super-Resolution) $ exit`
 
