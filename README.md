@@ -9,7 +9,14 @@ La súper-resolución es el conjunto de técnicas para aumentar la resolución e
 
 Las redes neuronales utilizadas corresponden a "Frame-Recurrent Video Super-Resolution" (FRVSR) [1] y "Temporally Coherent GAN for Video Super-Resolution" (TecoGAN) [2].
 
+Las etapas habilitadas en la ejecución del programa desarrollado son las siguientes:
+* __Entrenamiento__: Entrenamiento de la red neuronal seleccionada bajo los parámetros definidos.
+* __Evaluación__: Procesamiento de uno o varios videos, lo cual da como resultado el  archivo `metrics.txt` que contiene las diferentes métricas calculadas.
+* __Ejecución simple__: Procesamiento en vivo de un video o por medio de la cámara, mostrando en pantalla el resultado de  de aplicar la súper-resolución y las métricas solicitadas.
+
 ## Requerimientos
+
+El desarrollo de este trabajo se lleva a cabo en un sistema operativo Linux, Ubuntu 16.04, y por lo tanto, se recomienda la ejecución de los códigos en un sistema similar.
 
 Para hacer uso del programa es requerimiento tener instalado Python en su versión 3.6 o superior, y la herramienta `pip3`. 
 
@@ -33,11 +40,11 @@ Para evitar problemas de compatibilidad con las bibliotecas utilizadas, se recom
 
 `(Super-Resolution) $ pipenv install`
 
-Se puede confirmar la correcta instalación de las bibliotecas dentro del entorno mediante el comando `list` de `pip3`.
+Se puede confirmar la correcta instalación de las bibliotecas y sus versiones dentro del entorno mediante el comando `list` de `pip3`.
 
 `(Super-Resolution) $ pip3 list`
 
-Adicionalmente, se da un ejemplo para realizar la ejecución simple utilizando la cámara de video. En la carpeta `options`, se encuentra el archivo `demo.yaml`, el cual establece la configuración para realizar la ejecución simple a través del model de red neuronal FRVSR. A continuación se muestra el comando para llevar todo esto a cabo.
+Adicionalmente, para comprobar el correcto funcionamiento del programa, se da un ejemplo para realizar la ejecución simple utilizando la cámara de video. En la carpeta `options`, se encuentra el archivo `demo.yaml`, el cual establece la configuración para realizar la ejecución simple a través del modelo de red neuronal FRVSR. A continuación se muestra el comando para llevar a cabo su funcionamiento.
 
 `(Super-Resolution) $ python3 main.py --yaml_file options/demo.yaml`
 
@@ -49,8 +56,6 @@ Por último, el entorno puede desactivarse, luego de haber finalizado, mediante 
 
 ## Conjunto de datos
 
-El desarrollo de este trabajo se lleva a cabo en un sistema operativo Linux, Ubuntu 16.04, y por lo tanto se recomienda la ejecución de los códigos en un sistema similar.
-
 Los videos utilizados durante el entrenamiento y evaluación se encuentran especificados en el archivo `dataset.txt`, los cuales pueden obtenerse a través de `youtube-dl`, aplicación para descargar videos.
 
 `$ sudo apt install youtube-dl`
@@ -58,11 +63,6 @@ Los videos utilizados durante el entrenamiento y evaluación se encuentran espec
 `$ youtube-dl -a dataset.txt`
 
 ## Funcionamiento
-
-Las etapas habilitadas en la ejecución del programa son las siguientes:
-* __Entrenamiento__: Entrenamiento de la red neuronal seleccionada bajo los parámetros definidos.
-* __Evaluación__: Procesamiento de uno o varios videos, lo cual da como resultado el  archivo `metrics.txt` que contiene las diferentes métricas calculadas.
-* __Ejecución simple__: Procesamiento en vivo de un video o por medio de la cámara, mostrando en pantalla el resultado de  de aplicar súper-resolución  por segundo junto a las métricas solicitadas.
 
 Para realizar cualquier acción es necesario especificar la ubicación del archivo de configuración `.yaml` como único parámetro de entrada. Adicionalmente, dentro de la carpeta `options`, se tiene el archivo `demo.yaml`, el cual establece la configuración para realizar la ejecución simple a través de la cámara de video, y las plantillas de las redes FRVSR y TecoGAN.
 
