@@ -30,7 +30,7 @@ Para hacer uso del programa es requerimiento tener instalado Python en su versi�
 
 Si se quiere hacer uso de las capacidades de la  Graphic Processing Unit (GPU), es necesario instalar [CUDA 10.0](https://developer.download.nvidia.com/compute/cuda/10.0/Prod/docs/sidebar/CUDA_Installation_Guide_Linux.pdf), la cual es una plataforma de computación en paralelo y programación de modelos de redes neuronales, y [cuDNN 7.0](https://docs.nvidia.com/deeplearning/cudnn/developer-guide/index.html), o una versión compatible con CUDA 10.0, y la cual es una biblioteca que permite la aceleración mediante GPU de redes neuronales.
 
-Caso contrario, si el pgrograma se ejecutará solamente utilizando la Central Processing Unit (CPU), es necesario reemplazar en el archivo `Pipfile` la bilbioteca de `tensorflow-gpu` por `tensorflow`, manteniendo la versión especificada. Se advierte que el usar las redes neuronales con CPU baja considerablemente la velocidad de procesamiento.
+Caso contrario, si el programa fuera a ejecutarse utilizando solamente la Central Processing Unit (CPU), es necesario reemplazar en el archivo `Pipfile` la bilbioteca de `tensorflow-gpu` por `tensorflow`, manteniendo la versión especificada. Se advierte que el usar las redes neuronales con CPU baja considerablemente la velocidad de procesamiento.
 
 Para evitar problemas de compatibilidad con las bibliotecas utilizadas, se recomienda utilizar un entorno virtual para ejecutar el programa. Para la correcta configuración del entorno, este debe ejecutarse en la misma carpeta en que se encuentre el archivo `Pipfile`, el cual contiene los requerimientos de las bibliotecas utilizadas por el programa. A continuación se muestra como instalar y configurar el entorno mediante `pipenv`.
 
@@ -48,7 +48,7 @@ Adicionalmente, para comprobar el correcto funcionamiento del programa, se da un
 
 `(Super-Resolution) $ python3 main.py --yaml_file options/demo.yaml`
 
-El video que se muestra tiene la opción de pausarse mediante la tecla `p`, y reanudándose apretando la misma. Para terminar con la ejecución solo basta con apretar la tecla `q`.
+El video que se muestra tiene la opción de pausarse mediante la tecla `p`, y reanudarse apretando la misma. Para terminar con la ejecución solo basta con apretar la tecla `q`.
 
 Por último, el entorno puede desactivarse, luego de haber finalizado, mediante el comando `exit`.
 
