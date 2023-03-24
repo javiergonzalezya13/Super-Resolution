@@ -9,7 +9,7 @@ verify_ssl = true
 keras = "==2.2.4"
 opencv-python = "==4.2.0.34"
 sklearn = "==0.0"
-tensorflow-gpu = "==1.13.1" # GPU only
+tensorflow-gpu = "==2.12.0" # GPU only
 # tensorflow = "==1.13.1" # CPU only
 h5py = "==2.10.0"
 pydot = "==1.4.2"
